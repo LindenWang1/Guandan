@@ -1,7 +1,6 @@
 # Runs on every push and pull request: installs the pinned tools on a fresh
 # Linux machine and runs every check, proving the project works beyond your laptop.
 # Results show in the repo's Actions tab (green check = all passed).
-
 name: tests
 
 on:
@@ -19,7 +18,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile  # exact dependency versions from the lockfile
-      - run: pnpm test                       # rules, AI, online rooms, translations, UI models
+      - run: pnpm test                       # rules, AI, online rooms, AI seats, translations, UI models
       - run: pnpm build                      # bundle the Cloudflare Worker (website + room API)
       - run: pnpm build:demo                 # single-file offline practice game
       - run: node verify-release.mjs         # the Worker serves exactly the current files
+      - run: node ai/arena.mjs expert hard 50   # quick AI ladder check (win rate printed in the log)
