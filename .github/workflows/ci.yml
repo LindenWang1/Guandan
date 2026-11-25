@@ -1,0 +1,25 @@
+# Runs on every push and pull request: installs the pinned tools on a fresh
+# Linux machine and runs every check, proving the project works beyond your laptop.
+# Results show in the repo's Actions tab (green check = all passed).
+
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4            # download the repo onto the machine
+      - uses: pnpm/action-setup@v4           # installs the pnpm version in package.json
+      - uses: actions/setup-node@v4          # install Node.js
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile  # exact dependency versions from the lockfile
+      - run: pnpm test                       # rules, AI, online rooms, translations, UI models
+      - run: pnpm build                      # bundle the Cloudflare Worker (website + room API)
+      - run: pnpm build:demo                 # single-file offline practice game
+      - run: node verify-release.mjs         # the Worker serves exactly the current files
