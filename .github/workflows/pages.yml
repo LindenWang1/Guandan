@@ -2,6 +2,10 @@
 # browser) to GitHub Pages every time main changes.
 # One-time setup: repo Settings -> Pages -> Source: "GitHub Actions".
 # Online 2v2 rooms need a server, so they run on Cloudflare instead (docs/DEPLOY.md).
+#
+# Two jobs, as GitHub recommends: "build" makes and uploads the page, then
+# "deploy" publishes it. Deploying in its own job means the upload is complete
+# before GitHub looks for it.
 
 name: website
 
@@ -20,11 +24,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -39,5 +40,13 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
