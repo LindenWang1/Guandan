@@ -1422,8 +1422,30 @@ footer b {
   margin-top: 5px;
 }
 .lobby-seat .quiet {
-  margin-left: auto;
   white-space: nowrap;
+}
+.seat-buttons {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.lobby-seat.ai-seat .avatar {
+  font-size: 18px;
+}
+.bot-level {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.bot-level select {
+  width: auto;
+  min-width: 130px;
+  margin: 0;
 }
 .lobby-bottom {
   display: flex;

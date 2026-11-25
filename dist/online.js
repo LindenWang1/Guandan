@@ -205,7 +205,16 @@ export class OnlineRoom {
   poll() {
     this.clearTimer(this.timer);
     if (this.stopped) return;
-    const delay = Math.min(1800 * 2 ** Math.min(this.failures, 4), 15000);
+    // Poll faster while an AI seat is about to move so its plays appear promptly.
+    const g = this.latest?.game,
+      r = this.latest?.room,
+      aiTurn =
+        g &&
+        r &&
+        ((g.phase === "playing" && r.members[(r.seat + g.turn) % 4]?.ai) ||
+          g.phase === "tribute");
+    const base = aiTurn ? 900 : 1800;
+    const delay = Math.min(base * 2 ** Math.min(this.failures, 4), 15000);
     this.timer = this.setTimer(() => this.reconnect(), delay);
   }
   async reconnect() {

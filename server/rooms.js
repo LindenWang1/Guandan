@@ -1,4 +1,5 @@
 import { Game, chooseAI, sorted } from "../dist/engine.js";
+import { chooseTributeReturn } from "../dist/expert-ai.js";
 import { nextMatchScorebook, rotateScorebook } from "../dist/scorebook.js";
 import {
   TURN_SECONDS,
@@ -9,6 +10,15 @@ import {
 } from "../dist/turn-clock.js";
 import { validEmote, EMOTE_DURATION, EMOTE_COOLDOWN } from "../dist/emotes.js";
 const TTL = 24 * 60 * 60 * 1000;
+export const BOT_LEVELS = ["easy", "normal", "hard", "expert"];
+const BOT_NAMES = ["River", "Jade", "Lotus", "Willow", "Pine", "Maple"];
+const BOT_PACE = 800; // ms between moves by AI seats
+const ABSENT_PACE = 1500; // ms between moves made for absent humans
+// Lineup changes clear readiness for people; AI seats are always ready.
+const unready = (room) =>
+  room.members.forEach((m) => {
+    if (m) m.ready = !!m.bot;
+  });
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -89,10 +99,13 @@ export function publicView(row, seat, now = Date.now()) {
         ? {
             name: m.name,
             ready: m.ready,
-            online: now - seen[i] < 25000,
+            online: !!m.bot || now - seen[i] < 25000,
+            ai: !!m.bot,
+            level: m.bot ? m.level : undefined,
             bot:
-              !!room.autoPlayMinutes &&
-              now - seen[i] >= room.autoPlayMinutes * 60000,
+              !!m.bot ||
+              (!!room.autoPlayMinutes &&
+                now - seen[i] >= room.autoPlayMinutes * 60000),
             emote:
               m.emote && now - m.emote.at < EMOTE_DURATION
                 ? {
@@ -182,27 +195,39 @@ export class RoomStore {
     const room = JSON.parse(row.state),
       seen = JSON.parse(row.presence);
     const timedOut = clockExpired(room.turnClock, room.game, now);
+    const isBot = (p) => !!room.members[p]?.bot;
+    const hasBots = room.members.some((m) => m?.bot);
     if (
-      (!room.autoPlayMinutes && !timedOut) ||
+      (!room.autoPlayMinutes && !timedOut && !hasBots) ||
       room.stage !== "playing" ||
-      now - (room.botMovedAt || 0) < 1500
+      !room.game
     )
       return row;
     const absent = (p) =>
-      !!room.autoPlayMinutes && now - seen[p] >= room.autoPlayMinutes * 60000;
+      isBot(p) ||
+      (!!room.autoPlayMinutes && now - seen[p] >= room.autoPlayMinutes * 60000);
     const g = hydrate(room.game);
-    if (timedOut) {
+    // AI seats move at a readable pace; substitutes for absent people wait longer.
+    const actor =
+      g.phase === "tribute"
+        ? g.returns.find((x) => absent(x.from))?.from
+        : g.turn;
+    const pace = actor !== undefined && isBot(actor) ? BOT_PACE : ABSENT_PACE;
+    if (now - (room.botMovedAt || 0) < pace) return row;
+    if (timedOut && !isBot(g.turn)) {
       timeoutMove(g);
     } else if (g.phase === "tribute") {
       const item = g.returns.find((x) => absent(x.from));
       if (!item) return row;
-      const card = sorted(g.hands[item.from], g.level).find(
-        (c) => c.id !== item.received,
-      );
+      const card = isBot(item.from)
+        ? chooseTributeReturn(g.hands[item.from], item.received, g.level)
+        : sorted(g.hands[item.from], g.level).find(
+            (c) => c.id !== item.received,
+          );
       g.returnTribute(card.id, item.from);
     } else if (g.phase === "playing" && absent(g.turn)) {
       const p = g.turn,
-        move = chooseAI(g, p);
+        move = chooseAI(g, p, room.members[p]?.level || "normal");
       if (move)
         g.play(
           p,
@@ -393,9 +418,7 @@ export async function handleRooms(request, env) {
         "That name is taken at this table. Choose another.",
       );
       room.members[seat] = { name, tokenHash, ready: false };
-      room.members.forEach((m) => {
-        if (m) m.ready = false;
-      });
+      unready(room);
     } else {
       requireThat(
         seat >= 0,
@@ -493,9 +516,58 @@ export async function handleRooms(request, env) {
           room.members[seat] = null;
           if (room.host === seat) room.host = input.seat;
           seat = input.seat;
-          room.members.forEach((m) => {
-            if (m) m.ready = false;
-          });
+          unready(room);
+          break;
+        case "add-bot": {
+          requireThat(
+            seat === room.host,
+            "Only the host can add AI players.",
+            403,
+          );
+          requireThat(
+            room.stage === "lobby",
+            "Seats are fixed once the match starts.",
+          );
+          requireThat(
+            Number.isInteger(input.seat) &&
+              input.seat >= 0 &&
+              input.seat < 4 &&
+              !room.members[input.seat],
+            "Choose an open seat.",
+          );
+          requireThat(BOT_LEVELS.includes(input.level), "Choose an AI level.");
+          const taken = new Set(
+            room.members.filter(Boolean).map((m) => m.name.toLowerCase()),
+          );
+          const base = BOT_NAMES.find(
+            (n) => !taken.has(`${n} (AI)`.toLowerCase()),
+          );
+          room.members[input.seat] = {
+            name: `${base} (AI)`,
+            tokenHash: null,
+            bot: true,
+            level: input.level,
+            ready: true,
+          };
+          unready(room);
+          break;
+        }
+        case "remove-bot":
+          requireThat(
+            seat === room.host,
+            "Only the host can remove AI players.",
+            403,
+          );
+          requireThat(
+            room.stage === "lobby",
+            "Seats are fixed once the match starts.",
+          );
+          requireThat(
+            Number.isInteger(input.seat) && room.members[input.seat]?.bot,
+            "That seat is not an AI player.",
+          );
+          room.members[input.seat] = null;
+          unready(room);
           break;
         case "ready":
           requireThat(room.stage === "lobby", "The match has already started.");
@@ -594,10 +666,10 @@ export async function handleRooms(request, env) {
         case "leave":
           if (room.stage === "lobby") {
             room.members[seat] = null;
-            room.members.forEach((m) => {
-              if (m) m.ready = false;
-            });
-            if (room.host === seat) room.host = room.members.findIndex(Boolean);
+            unready(room);
+            // The host must be a person; a table of only AI players closes.
+            if (room.host === seat)
+              room.host = room.members.findIndex((m) => m && !m.bot);
             if (room.host < 0) room.stage = "closed";
           } else room.stage = "closed";
           break;

@@ -301,6 +301,12 @@ export const messages = {
   "Away · seat reserved": "暂时离线 · 座位已保留",
   "Invite a friend": "邀请好友",
   "Take Seat": "入座",
+  "Add AI": "添加电脑",
+  "Remove AI": "移除电脑",
+  "Invite a friend or add an AI": "邀请好友或添加电脑",
+  "AI Level for New Seats": "新电脑玩家难度",
+  "Short on players? The host can fill any open seat with an AI.":
+    "人数不够？房主可以让电脑玩家坐任意空位。",
   "Team A": "A 队",
   "Team B": "B 队",
   "Seats 1 & 3": "座位 1 和 3",
@@ -313,8 +319,8 @@ export const messages = {
   "Start Match": "开始比赛",
   "The host starts when everyone is ready.": "全部准备后，由房主开始比赛。",
   "Bring Your Table Together": "邀请好友同桌",
-  "Four people, two teams. Create a room or enter a friend’s code.":
-    "四人两队。创建房间，或输入好友的房间码。",
+  "Four players, two teams. Create a room or enter a friend’s code. The host can fill open seats with AI.":
+    "四位玩家，两支队伍。创建房间，或输入好友的房间码。房主可以让电脑玩家填补空位。",
   "Your Name": "你的昵称",
   "Name at the table": "牌桌昵称",
   "Room Code": "房间码",
@@ -356,8 +362,8 @@ export const messages = {
   "Room invite link": "房间邀请链接",
   "Room code:": "房间码：",
   "The art of playing together": "掼蛋玩法与搭档配合",
-  "The player opposite you is your partner. Play runs counterclockwise: you → right → partner → left. In AI Practice, Jade is your partner. Online 2v2 is four human players in two fixed teams.":
-    "对面的玩家是你的搭档。按逆时针顺序出牌：你 → 右手边 → 搭档 → 左手边。人机练习中，Jade 是你的搭档；在线 2 对 2 由四位真人组成两支固定队伍。",
+  "The player opposite you is your partner. Play runs counterclockwise: you → right → partner → left. In AI Practice, Jade is your partner. Online 2v2 has two fixed teams; the host can fill open seats with AI players.":
+    "对面的玩家是你的搭档。按逆时针顺序出牌：你 → 右手边 → 搭档 → 左手边。人机练习中，Jade 是你的搭档；在线 2 对 2 分为两支固定队伍，房主可以让电脑玩家填补空位。",
   "The Turn": "出牌顺序",
   "Select cards, then choose": "选好手牌后，点击",
   ". Beat the current combination with the same type, play a bomb, or pass. Three consecutive passes clear the table. The last player leads again; if they have finished, their partner leads.":
@@ -391,8 +397,8 @@ export const messages = {
   "A 1–4 result at Ace is a failed attempt. Three failed Ace attempts, even across separate visits to Ace, reset that team to 2. Losing at Ace when the opponent’s final play is entirely declared aces also resets the Level Team to 2. Challengers must become the Level Team before they can win the match.":
     "打 A 时，头游、末游算闯关失败。累计三次打 A 失败（不要求连续）则降回 2。打 A 的队伍输掉本局，且对方最后一手全部声明为 A 时，也降回 2。挑战方必须先成为打级方，才有资格赢得整场比赛。",
   Tribute: "进贡与还贡",
-  "After a 1–2 finish, both losers pay their highest non-wild cards. First place receives the higher one. Otherwise, only last place pays first place. Winners return any card. Each human chooses their own return. AI players choose theirs in practice mode.":
-    "双上后，两位输家各进贡自己最大的非逢人配牌，头游收较大的贡牌。其他结果由末游向头游进贡。赢家可还任意一张牌；真人自行选择还贡牌，人机练习中的电脑自动选择。",
+  "After a 1–2 finish, both losers pay their highest non-wild cards. First place receives the higher one. Otherwise, only last place pays first place. Winners return any card. Each person chooses their own return; AI players choose automatically.":
+    "双上后，两位输家各进贡自己最大的非逢人配牌，头游收较大的贡牌。其他结果由末游向头游进贡。赢家可还任意一张牌；真人自行选择还贡牌，电脑玩家自动选择。",
   "Both Big Jokers among the two paying losers cancel double tribute. For single tribute, the payer must hold both. The higher or sole tribute payer leads. Without tribute, the previous winner leads.":
     "双贡时，两位进贡者合计持有两张大王即可抗贡；单贡时，进贡者须独持两张大王才能抗贡。贡牌较大者或唯一进贡者先出；抗贡后，由上一局头游先出。",
   "Table Conventions": "本桌约定",
@@ -402,8 +408,8 @@ export const messages = {
   Relaxed: "悠闲",
   Quick: "快速",
   Learning: "学习",
-  "The AI is a practice opponent: it favors longer combinations, protects its partner’s lead, and conserves bombs. Every level sees only its own cards, the card counts, and the cards already played.":
-    "电脑用于陪练，会优先出较长的牌型、保护搭档的领出权并节省炸弹。每个难度都只能看到自己的手牌、公开的剩余牌数和已经出过的牌。",
+  "AI players favor longer combinations, protect their partner’s lead, and conserve bombs. Every level sees only its own cards, the card counts, and the cards already played.":
+    "电脑玩家会优先出较长的牌型、保护搭档的领出权并节省炸弹。每个难度都只能看到自己的手牌、公开的剩余牌数和已经出过的牌。",
   "Finish this hand first.": "请先完成本局。",
   "No tribute to return.": "当前无需还贡。",
   "You have no tribute to return.": "你无需还贡。",
@@ -507,7 +513,7 @@ const patterns = [
   [/^Playing Level (.+)$/, (_, r) => `当前级数 ${r}`],
   [/^(.+)♥ is wild$/, (_, r) => `${r}♥ 为逢人配`],
   [
-    /^(\d+) cards( · Away| · Passed| · AI)?$/,
+    /^(\d+) cards?( · Away| · Passed| · AI)?$/,
     (_, n, s) =>
       `${n} 张${s === " · AI" ? " · 电脑" : s === " · Away" ? " · 离线" : s ? " · 不出" : ""}`,
   ],
@@ -520,6 +526,11 @@ const patterns = [
     (_, n, d) => `${n}/4 位玩家 · 双上升 ${d} 级`,
   ],
   [/^· You$/, () => "· 你"],
+  [
+    /^AI · (Beginner|Medium|Hard|Expert)$/,
+    (_, l) =>
+      `电脑 · ${{ Beginner: "入门", Medium: "中等", Hard: "困难", Expert: "专家" }[l]}`,
+  ],
   [/^Room$/, () => "房间"],
   [/^· You are on$/, () => "· 你的队伍是"],
   [

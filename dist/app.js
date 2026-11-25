@@ -177,6 +177,15 @@ function newNetwork() {
   net = new OnlineRoom(setOnline, connection);
   return net;
 }
+const AI_LEVEL_NAMES = {
+  easy: "Beginner",
+  normal: "Medium",
+  hard: "Hard",
+  expert: "Expert",
+};
+const aiLevelName = (level) => AI_LEVEL_NAMES[level] || "Medium";
+const cardCount = (n) => `${n} card${n === 1 ? "" : "s"}`;
+let botLevel = null;
 function renderLobby() {
   if (room.spectator) {
     $("lobby").innerHTML =
@@ -185,11 +194,41 @@ function renderLobby() {
   }
   const seatHTML = (i) => {
     const m = room.members[i];
-    return `<div class="lobby-seat ${i === room.seat ? "mine" : ""}"><div class="avatar" translate="no">${m ? escape(m.name.slice(0, 1).toUpperCase()) : "+"}</div><div><b>${m ? `<span translate="no">${escape(m.name)}</span>` : "Open Seat"}${i === room.seat ? " · You" : ""}</b><small>${m ? (m.ready ? "Ready to play" : m.online ? "Getting ready" : "Away · seat reserved") : "Invite a friend"}</small></div>${m ? "" : `<button class="quiet" data-seat="${i}">Take Seat</button>`}</div>`;
+    const host = room.seat === room.host;
+    const status = m?.ai
+      ? `AI · ${aiLevelName(m.level)}`
+      : m
+        ? m.ready
+          ? "Ready to play"
+          : m.online
+            ? "Getting ready"
+            : "Away · seat reserved"
+        : host
+          ? "Invite a friend or add an AI"
+          : "Invite a friend";
+    const buttons = m
+      ? m.ai && host
+        ? `<button class="quiet" data-remove-bot="${i}">Remove AI</button>`
+        : ""
+      : `<button class="quiet" data-seat="${i}">Take Seat</button>${host ? `<button class="quiet" data-add-bot="${i}">Add AI</button>` : ""}`;
+    return `<div class="lobby-seat ${i === room.seat ? "mine" : ""} ${m?.ai ? "ai-seat" : ""}"><div class="avatar" translate="no">${m ? (m.ai ? "🤖" : escape(m.name.slice(0, 1).toUpperCase())) : "+"}</div><div><b>${m ? `<span translate="no">${escape(m.name)}</span>` : "Open Seat"}${i === room.seat ? " · You" : ""}</b><small>${status}</small></div><div class="seat-buttons">${buttons}</div></div>`;
   };
   const allReady = room.members.every((m) => m?.ready);
   $("lobby").innerHTML =
-    `<div class="lobby-heading"><span class="eyebrow">FOUR FRIENDS. TWO TEAMS.</span><h1>Your table is waiting.</h1><p>Share the code. Take a seat opposite your partner.</p></div><div class="invite"><span>ROOM CODE</span><strong>${room.code}</strong><button data-action="copy">Copy Invite Link</button></div><div class="lobby-teams"><div><h2>Team A <small>Seats 1 & 3</small></h2>${seatHTML(0)}${seatHTML(2)}</div><div><h2>Team B <small>Seats 2 & 4</small></h2>${seatHTML(1)}${seatHTML(3)}</div></div><div class="lobby-bottom"><p>${room.members.filter(Boolean).length}/4 players · Double-up +${room.doubleUp}<br><small>Rooms expire after 24 hours without a game action.</small></p><div class="actions"><button data-action="leave">Leave Room</button><button data-action="ready" ${busy ? "disabled" : ""}>${room.members[room.seat].ready ? "Not Ready" : "I’m Ready"}</button>${room.seat === room.host ? `<button class="gold-btn" data-action="start" ${!allReady || busy ? "disabled" : ""}>Start Match</button>` : '<span class="waiting-host">The host starts when everyone is ready.</span>'}</div></div>`;
+    `<div class="lobby-heading"><span class="eyebrow">FOUR FRIENDS. TWO TEAMS.</span><h1>Your table is waiting.</h1><p>Share the code. Take a seat opposite your partner.</p><p class="muted">Short on players? The host can fill any open seat with an AI.</p></div><div class="invite"><span>ROOM CODE</span><strong>${room.code}</strong><button data-action="copy">Copy Invite Link</button></div><div class="lobby-teams"><div><h2>Team A <small>Seats 1 & 3</small></h2>${seatHTML(0)}${seatHTML(2)}</div><div><h2>Team B <small>Seats 2 & 4</small></h2>${seatHTML(1)}${seatHTML(3)}</div></div>${
+      room.seat === room.host
+        ? `<div class="bot-level"><label for="bot-level">AI Level for New Seats</label><select id="bot-level">${Object.entries(
+            AI_LEVEL_NAMES,
+          )
+            .map(
+              ([v, label]) =>
+                `<option value="${v}" ${(botLevel || preferences.difficulty) === v ? "selected" : ""}>${label}</option>`,
+            )
+            .join("")}</select></div>`
+        : ""
+    }<div class="lobby-bottom"><p>${room.members.filter(Boolean).length}/4 players · Double-up +${room.doubleUp}<br><small>Rooms expire after 24 hours without a game action.</small></p><div class="actions"><button data-action="leave">Leave Room</button><button data-action="ready" ${busy ? "disabled" : ""}>${room.members[room.seat].ready ? "Not Ready" : "I’m Ready"}</button>${room.seat === room.host ? `<button class="gold-btn" data-action="start" ${!allReady || busy ? "disabled" : ""}>Start Match</button>` : '<span class="waiting-host">The host starts when everyone is ready.</span>'}</div></div>`;
+  const levelPicker = $("bot-level");
+  if (levelPicker) levelPicker.onchange = (e) => (botLevel = e.target.value);
 }
 function render() {
   scoreboard.observe();
@@ -285,14 +324,14 @@ function render() {
           ? p === 0
             ? "Your seat"
             : "27 cards"
-          : `${game.counts?.[p] ?? game.hands[p].length} cards${room?.members[(room.seat + p) % 4]?.bot ? " · AI" : offline ? " · Away" : ""}`;
+          : `${cardCount(game.counts?.[p] ?? game.hands[p].length)}${room?.members[(room.seat + p) % 4]?.bot ? " · AI" : offline ? " · Away" : ""}`;
     el.querySelector("small").classList.toggle("finish-place", place >= 0);
   }
   renderHand();
   $("hand-count").textContent =
     game.phase === "ready"
       ? "27 cards to begin"
-      : `${game.hands[0].length} cards`;
+      : cardCount(game.hands[0].length);
   $("sort-btn").disabled = game.phase === "ready";
   const center = $("table-center");
   document.querySelector(".table").dataset.phase = game.phase;
@@ -594,7 +633,7 @@ function showOnline(joinCode = "") {
   }
   modal(
     "Bring Your Table Together",
-    `<p>Four people, two teams. Create a room or enter a friend’s code.</p><form id="online-form"><label for="player-name">Your Name</label><input id="player-name" name="playerName" autocomplete="nickname" maxlength="18" placeholder="Name at the table" required><label for="join-code">Room Code <span>(to join a friend)</span></label><input id="join-code" name="roomCode" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${escape(joinCode)}" placeholder="8-character code"><p id="form-error" role="alert"></p><div class="form-actions"><button type="button" id="create-room" class="gold-btn">Create Room</button><button type="submit" id="join-room">Join Room</button></div><p class="muted">Your seat stays in this browser if you reload. A match starts when all four players are ready.</p></form>`,
+    `<p>Four players, two teams. Create a room or enter a friend’s code. The host can fill open seats with AI.</p><form id="online-form"><label for="player-name">Your Name</label><input id="player-name" name="playerName" autocomplete="nickname" maxlength="18" placeholder="Name at the table" required><label for="join-code">Room Code <span>(to join a friend)</span></label><input id="join-code" name="roomCode" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${escape(joinCode)}" placeholder="8-character code"><p id="form-error" role="alert"></p><div class="form-actions"><button type="button" id="create-room" class="gold-btn">Create Room</button><button type="submit" id="join-room">Join Room</button></div><p class="muted">Your seat stays in this browser if you reload. A match starts when all four players are ready.</p></form>`,
   );
   const submit = async (join) => {
     const name = $("player-name").value.trim(),
@@ -792,6 +831,15 @@ document.addEventListener("click", (e) => {
   }
   if (e.target.closest("#start-btn")) act("start");
   if (e.target.closest("#next-btn")) act("next");
+  const addBot = e.target.closest("[data-add-bot]");
+  if (addBot)
+    act("add-bot", {
+      seat: Number(addBot.dataset.addBot),
+      level: $("bot-level")?.value || botLevel || preferences.difficulty,
+    });
+  const removeBot = e.target.closest("[data-remove-bot]");
+  if (removeBot)
+    act("remove-bot", { seat: Number(removeBot.dataset.removeBot) });
   const seat = e.target.closest("[data-seat]");
   if (seat) act("seat", { seat: Number(seat.dataset.seat) });
   const a = e.target.closest("[data-action]")?.dataset.action;
