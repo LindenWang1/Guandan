@@ -3813,3 +3813,234 @@ main > .mode-bar {
     font-size: 24px;
   }
 }
+
+/* v3.1: Selected cards lift and glow instead of turning khaki, cards that
+   cannot be returned as tribute are dimmed, and the action bar stays in reach
+   on shorter screens. */
+.hand .card.selected {
+  transform: translateY(-10px) !important;
+  border-color: var(--gold);
+  background: linear-gradient(180deg, #fffdf6, #fff6dc);
+  box-shadow:
+    0 0 0 2px #f0d18a,
+    0 0 16px 2px #f0d18a77,
+    0 12px 18px #0006;
+}
+.hand .card.selected:before {
+  content: "";
+  inset: -2px -2px auto;
+  height: 4px;
+  border-radius: 7px 7px 0 0;
+  background: var(--gold);
+}
+.card.unavailable {
+  opacity: 0.42;
+  filter: saturate(0.35);
+}
+button.card.unavailable:hover:not(:disabled) {
+  transform: none;
+}
+#board .action-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  box-shadow: 0 -12px 24px #04110e66;
+}
+@media (max-width: 540px) {
+  .hand .card.selected {
+    transform: translateY(-7px) !important;
+  }
+}
+/* Short screens: the lifted cards and the table centre already show the
+   selection and the play to beat, so keep the sticky bar to one compact row. */
+@media (max-height: 860px) {
+  #board .action-bar .selection-preview,
+  #board .action-bar .table-reminder {
+    display: none;
+  }
+  #board .action-bar {
+    padding-block: 8px;
+  }
+}
+
+/* v3.1 round 2: each seat shows its play in the current trick, players close
+   to going out are flagged, and hand results show both teams' levels. */
+.player .seat-play {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 6px);
+  transform: translateX(-50%);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--seat-accent, #efd39b66);
+  background: #0e231cf0;
+  color: #f3ead2;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+  animation: seat-play-in 0.2s ease-out;
+}
+.player.south .seat-play {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+.player .seat-play.is-pass {
+  border-style: dashed;
+  border-color: #d6b79c66;
+  color: #cdbfae;
+  font-weight: 500;
+}
+@keyframes seat-play-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+}
+.player.low-cards small:not(.finish-place) {
+  color: #f2c879;
+  font-weight: 700;
+}
+.player.critical-cards small:not(.finish-place) {
+  color: #ff9b8a;
+}
+.player.critical-cards .avatar {
+  animation: critical-pulse 1.4s ease-in-out infinite;
+}
+@keyframes critical-pulse {
+  50% {
+    box-shadow: 0 0 0 6px #ff9b8a33;
+  }
+}
+.level-results {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0 4px;
+}
+.level-result {
+  display: grid;
+  justify-items: center;
+  min-width: 96px;
+  padding: 6px 12px;
+  border: 1px solid #ffffff1f;
+  border-radius: 10px;
+  background: #0b1f1899;
+  font-size: 11px;
+  color: var(--muted);
+}
+.level-result strong {
+  font:
+    700 22px/1.1 Georgia,
+    serif;
+  color: var(--ink);
+}
+.level-result.won {
+  border-color: var(--seat-accent, var(--gold));
+  box-shadow: 0 0 14px #efd39b22;
+}
+.level-result.won span {
+  color: var(--seat-accent, var(--gold));
+}
+.level-result em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--gold);
+}
+.team-score strong.level-changed {
+  animation: level-changed 1.2s ease-out;
+}
+@keyframes level-changed {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.3);
+    box-shadow: 0 0 0 6px #efd39b44;
+    color: var(--gold);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .player .seat-play,
+  .player.critical-cards .avatar,
+  .team-score strong.level-changed {
+    animation: none;
+  }
+}
+@media (max-width: 540px) {
+  .player .seat-play {
+    max-width: 110px;
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+  .level-result {
+    min-width: 76px;
+    padding: 4px 8px;
+  }
+  .level-result strong {
+    font-size: 18px;
+  }
+}
+/* The top seat sits right above the trick owner tag: put its play beside it. */
+.player.north .seat-play {
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  animation: none;
+}
+@media (max-width: 540px) {
+  .player.north .seat-play {
+    left: 50%;
+    top: calc(100% + 4px);
+    transform: translateX(-50%);
+  }
+}
+/* Keep the result summary to one short row so the deal button stays visible. */
+.level-results {
+  margin: 6px 0 2px;
+  gap: 8px;
+}
+.level-result {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.level-result strong {
+  font-size: 15px;
+}
+@media (max-width: 540px) {
+  .level-result {
+    padding: 2px 8px;
+  }
+  .level-result strong {
+    font-size: 14px;
+  }
+}
+/* Make the card count itself a small pill so the warning reads at a glance. */
+.player.low-cards small:not(.finish-place) {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: #f2c87922;
+  box-shadow: inset 0 0 0 1px #f2c87955;
+}
+.player.critical-cards small:not(.finish-place) {
+  background: #ff9b8a26;
+  box-shadow: inset 0 0 0 1px #ff9b8a88;
+}
+
+/* The end-of-hand panel (result, level row, deal button) is taller than a
+   trick, so the table grows while it shows instead of overlapping the seats. */
+#board > .table[data-phase="round-over"],
+#board > .table[data-phase="game-over"] {
+  flex-basis: clamp(250px, 34dvh, 310px);
+}

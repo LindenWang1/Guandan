@@ -10,6 +10,7 @@ import {
   moves,
   label,
   chooseAI,
+  returnableCards,
 } from "./engine.js";
 import { OnlineRoom } from "./online.js";
 import { createEmotes } from "./emote-ui.js";
@@ -23,6 +24,7 @@ import { nextMatchScorebook } from "./scorebook.js";
 import { createScoreboard } from "./scoreboard-ui.js";
 import { timeoutMove } from "./turn-clock.js";
 import { createTurnClock } from "./turn-clock-ui.js";
+import { cardHTML, isRedCard } from "./card-view.js";
 const $ = (id) => document.getElementById(id),
   escape = (s) =>
     String(s).replace(
@@ -84,6 +86,12 @@ const canPlay = () =>
   (mode === "practice" || connected);
 const owesTribute = () =>
   !room?.spectator && game.phase === "tribute" && game.returns.length > 0;
+// Cards the player may hand back during tribute (10 or lower when they have one).
+const returnable = (id) =>
+  returnableCards(game.hands[0], game.returns?.[0]?.received).some(
+    (c) => c.id === id,
+  );
+const tributeReady = () => selected.size === 1 && returnable([...selected][0]);
 const canDeal = () =>
   !room?.spectator &&
   (!room ||
@@ -111,7 +119,12 @@ function closeModal() {
   modalOpener?.focus({ preventScroll: true });
 }
 const cardsHTML = (c, interactive = false) =>
-  `<${interactive ? "button" : "div"} class="card ${c.s === "♥" || c.s === "♦" || c.r === 16 ? "red" : ""} ${wild(c, game.level) ? "wild" : ""} ${c.r >= 15 ? "joker" : ""} ${interactive && selected.has(c.id) ? "selected" : ""}" ${interactive ? `data-card="${c.id}" aria-label="${rankName(c.r)} ${c.s}${wild(c, game.level) ? ", wild" : ""}" aria-pressed="${selected.has(c.id)}"` : ""}><span>${c.r >= 15 ? "★" : rankName(c.r)}</span><span class="suit">${c.r >= 15 ? "JOKER" : c.s}</span><span class="large-suit" aria-hidden="true">${c.r >= 15 ? "♛" : c.s}</span><span class="card-corner" aria-hidden="true">${c.r >= 15 ? "★" : rankName(c.r)}<small>${c.r >= 15 ? "" : c.s}</small></span></${interactive ? "button" : "div"}>`;
+  cardHTML(c, {
+    level: game.level,
+    interactive,
+    selected: interactive && selected.has(c.id),
+    unavailable: interactive && owesTribute() && !returnable(c.id),
+  });
 function legalSelection() {
   if (!selected.size) return [];
   return moves(
@@ -265,6 +278,7 @@ function render() {
   }
   $("our-level").textContent = rankName(game.levels[0]);
   $("their-level").textContent = rankName(game.levels[1]);
+  flashLevels();
   $("our-names").innerHTML =
     `<span>${room?.spectator ? escape(playerName(0)) : "You"}</span> & <span translate="no">${escape(playerName(2))}</span>`;
   $("their-names").textContent = `${playerName(1)} & ${playerName(3)}`;
@@ -333,6 +347,25 @@ function render() {
             : "27 cards"
           : `${cardCount(game.counts?.[p] ?? game.hands[p].length)}${room?.members[(room.seat + p) % 4]?.bot ? " · AI" : offline ? " · Away" : ""}`;
     el.querySelector("small").classList.toggle("finish-place", place >= 0);
+    // What this seat did in the current trick, so the whole trick can be read
+    // at a glance rather than only the play on top.
+    let seatPlay = el.querySelector(".seat-play");
+    if (!seatPlay) {
+      seatPlay = document.createElement("span");
+      seatPlay.className = "seat-play";
+      el.append(seatPlay);
+    }
+    const lastMove = game.phase === "playing" ? game.lastMoves?.[p] || "" : "";
+    const showPlay = !!lastMove && lastMove !== "Finished" && !seatStatus.owner;
+    if (seatPlay.textContent !== (showPlay ? lastMove : ""))
+      seatPlay.textContent = showPlay ? lastMove : "";
+    seatPlay.hidden = !showPlay;
+    seatPlay.classList.toggle("is-pass", lastMove === "Pass");
+    // Few cards left: a player close to going out deserves attention.
+    const left = game.counts?.[p] ?? game.hands[p].length;
+    const live = game.phase === "playing" && left > 0 && place < 0;
+    el.classList.toggle("low-cards", live && left <= 6);
+    el.classList.toggle("critical-cards", live && left <= 2);
     el.querySelector("small").dataset.place = place >= 0 ? place + 1 : "";
   }
   renderHand();
@@ -357,7 +390,7 @@ function render() {
       game.__statsRecorded = true;
       stats.record(result.winner === 0);
     }
-    center.innerHTML = `<p class="played-by">${result.gameWon ? "MATCH COMPLETE" : "HAND COMPLETE"}</p><p class="table-title">${room?.spectator ? (result.winner === 0 ? "Team A wins." : "Team B wins.") : result.winner === 0 ? "Your team wins." : "Opponents win."}</p><p class="table-subtitle">${result.gameWon ? "The climb to Ace is complete." : `1st & ${result.partnerPlace === 2 ? "2nd" : result.partnerPlace === 3 ? "3rd" : "4th"} · Now on ${rankName(game.levels[result.winner])}`}</p>${canDeal() ? `<button id="next-btn" class="gold-btn">${result.gameWon ? "Play Again" : "Deal Next Hand"} ↗</button>` : '<p class="table-subtitle">Waiting for the host to deal.</p>'}`;
+    center.innerHTML = `<p class="played-by">${result.gameWon ? "MATCH COMPLETE" : "HAND COMPLETE"}</p><p class="table-title">${room?.spectator ? (result.winner === 0 ? "Team A wins." : "Team B wins.") : result.winner === 0 ? "Your team wins." : "Opponents win."}</p><p class="table-subtitle">${result.gameWon ? "The climb to Ace is complete." : `1st & ${result.partnerPlace === 2 ? "2nd" : result.partnerPlace === 3 ? "3rd" : "4th"} · Now on ${rankName(game.levels[result.winner])}`}</p>${levelSummary(result)}${canDeal() ? `<button id="next-btn" class="gold-btn">${result.gameWon ? "Play Again" : "Deal Next Hand"} ↗</button>` : '<p class="table-subtitle">Waiting for the host to deal.</p>'}`;
     $("last-action").textContent = result.order
       .map((p, i) => `${i + 1}. ${playerName(p)}`)
       .join(" · ");
@@ -367,7 +400,7 @@ function render() {
         : `A ${result.partnerPlace === 2 ? "double-up" : `1–${result.partnerPlace}`} finish. ${result.gameWon ? "Match complete." : `Winning promotion: +${result.delta}.`}`,
     );
   } else if (game.phase === "tribute") {
-    center.innerHTML = `<div class="watermark">进贡</div><p class="combo-name">A little give and take.</p><p class="table-subtitle">${owesTribute() ? "Select any one card to return." : "Waiting for tribute returns."}</p>`;
+    center.innerHTML = `<div class="watermark">进贡</div><p class="combo-name">A little give and take.</p><p class="table-subtitle">${owesTribute() ? "Select a card of 10 or lower to return." : "Waiting for tribute returns."}</p>`;
     status(
       owesTribute()
         ? `Return one card to ${playerName(game.returns[0].to)}.`
@@ -397,7 +430,9 @@ function render() {
     status(
       game.turn === 0
         ? game.trick
-          ? `Your turn. Beat the ${game.trick.move.type.toLowerCase()} or pass.`
+          ? game.trick.player === 2 && !room?.spectator
+            ? "Your partner is winning this trick. Pass to let it stand, or play over it."
+            : `Your turn. Beat the ${game.trick.move.type.toLowerCase()} or pass.`
           : "Your lead. Play any legal combination."
         : `${playerName(game.turn)} ${mode === "online" ? "is up." : "is thinking…"}`,
     );
@@ -463,6 +498,54 @@ function render() {
           );
     }
   }
+}
+// Both teams' levels after a hand, with the winners' promotion called out.
+function levelSummary(result) {
+  // Only the old Ace declarers can be demoted. Winners otherwise climb to at
+  // least 3, so a winner on 2 means the winners themselves were demoted.
+  const demoted = !result.demotion
+    ? -1
+    : game.levels[result.winner] === 2
+      ? result.winner
+      : 1 - result.winner;
+  const team = (t) => {
+    const name = room?.spectator
+      ? t === 0
+        ? "Team A"
+        : "Team B"
+      : t === 0
+        ? "Your Team"
+        : "Opponents";
+    const won = result.winner === t;
+    const change =
+      demoted === t
+        ? "Back to 2"
+        : won
+          ? result.gameWon
+            ? "Match Won"
+            : `+${result.delta}`
+          : "";
+    return `<div class="level-result ${won ? "won" : ""}" data-team="${t ? "b" : "a"}"><span>${name}</span><strong>${rankName(game.levels[t])}</strong>${change ? `<em>${change}</em>` : ""}</div>`;
+  };
+  return `<div class="level-results">${team(0)}${team(1)}</div>`;
+}
+// Briefly highlight a team level that just changed.
+let shownLevels = null;
+function flashLevels() {
+  const now = `${game.levels[0]}:${game.levels[1]}`;
+  if (shownLevels && shownLevels !== now) {
+    const [a, b] = shownLevels.split(":").map(Number);
+    [
+      [$("our-level"), a !== game.levels[0]],
+      [$("their-level"), b !== game.levels[1]],
+    ].forEach(([el, changed]) => {
+      if (!changed) return;
+      el.classList.remove("level-changed");
+      void el.offsetWidth;
+      el.classList.add("level-changed");
+    });
+  }
+  shownLevels = now;
 }
 function renderHand() {
   if (room?.spectator) {
@@ -537,7 +620,7 @@ function renderActions() {
     busy ||
     (mode === "online" && !connected) ||
     room?.stage === "closed" ||
-    (owesTribute() ? selected.size !== 1 : !canPlay() || !legal.length);
+    (owesTribute() ? !tributeReady() : !canPlay() || !legal.length);
   $("play-btn").textContent = busy
     ? "Sending…"
     : owesTribute()
@@ -559,7 +642,9 @@ function renderActions() {
   $("turn-indicator").dataset.state = feedback.state;
   $("selection-label").textContent = selected.size
     ? owesTribute()
-      ? `${selected.size} selected`
+      ? tributeReady()
+        ? "Ready to return this card."
+        : "Return a card of 10 or lower."
       : legal.length
         ? label(legal.find((m) => m.key === declared) || legal[0])
         : moves(
@@ -574,10 +659,10 @@ function renderActions() {
   const preview = $("selection-preview");
   preview.hidden = !selected.size || !!room?.spectator;
   preview.dataset.valid = String(
-    owesTribute() ? selected.size === 1 : legal.length > 0,
+    owesTribute() ? tributeReady() : legal.length > 0,
   );
   const picked = game.hands[0].filter((c) => selected.has(c.id));
-  const previewHTML = `<span class="preview-caption">Selected · Tap to Remove</span><div class="selection-chips">${picked.map((c) => `<button type="button" data-remove-card="${escape(c.id)}" ${busy ? "disabled" : ""} class="selection-chip ${c.s === "♥" || c.s === "♦" || c.r === 16 ? "red" : ""}" aria-label="${escape(rankName(c.r) + " " + c.s)}"><span translate="no">${c.r >= 15 ? (c.r === 16 ? "★" : "☆") : rankName(c.r) + c.s}</span><span aria-hidden="true">×</span></button>`).join("")}</div>`;
+  const previewHTML = `<span class="preview-caption">Selected · Tap to Remove</span><div class="selection-chips">${picked.map((c) => `<button type="button" data-remove-card="${escape(c.id)}" ${busy ? "disabled" : ""} class="selection-chip ${isRedCard(c) ? "red" : ""}" aria-label="${escape(rankName(c.r) + " " + c.s)}"><span translate="no">${c.r >= 15 ? (c.r === 16 ? "★" : "☆") : rankName(c.r) + c.s}</span><span aria-hidden="true">×</span></button>`).join("")}</div>`;
   if (selectionPreviewHTML !== previewHTML) {
     selectionPreviewHTML = previewHTML;
     const focused = document.activeElement?.dataset?.removeCard;
@@ -701,15 +786,8 @@ function showRoomDetails() {
   }
   modal(
     "Your Online Table",
-    `<p>Room <b>${room.code}</b> · You are on <b>Team ${room.seat % 2 ? "B" : "A"}</b>.</p><p>Your partner is <b${room.members[(room.seat + 2) % 4] ? ' translate="no"' : ""}>${escape(room.members[(room.seat + 2) % 4]?.name || "the open seat opposite you")}</b>. ${room.stage === "lobby" ? "Choose an open seat in the lobby to change teams." : "Seats stay fixed for this match."}</p><p>Reloading reconnects to this seat. If someone loses connection, their turn waits for them.</p><button class="gold-btn" data-action="copy">Copy Invite Link</button><p class="muted">The room expires after 24 hours without a game action. Explicitly leaving during a match closes it for everyone.</p>`,
+    `<p>Room <b>${room.code}</b> · You are on <b>Team ${room.seat % 2 ? "B" : "A"}</b>.</p><p>Your partner is <b${room.members[(room.seat + 2) % 4] ? ' translate="no"' : ""}>${escape(room.members[(room.seat + 2) % 4]?.name || "the open seat opposite you")}</b>. ${room.stage === "lobby" ? "Choose an open seat in the lobby to change teams." : "Seats stay fixed for this match."}</p><p>Reloading reconnects to this seat. An absent player keeps their seat and takes control again when they reconnect.</p><button class="gold-btn" data-action="copy">Copy Invite Link</button><p class="muted">The room expires after 24 hours without a game action. Explicitly leaving during a match closes it for everyone.</p>`,
   );
-  $("modal-body")
-    .querySelectorAll("p")
-    .forEach((p) => {
-      if (p.textContent.startsWith("Reloading reconnects"))
-        p.textContent =
-          "Reloading reconnects to this seat. An absent player keeps their seat and takes control again when they reconnect.";
-    });
   const settings = document.createElement("section");
   settings.className = "room-settings";
   settings.innerHTML = `<h3>Keep the Table Moving</h3><label for="absent-timeout">Auto-Play Absent Seats</label><select id="absent-timeout" ${room.seat !== room.host ? "disabled" : ""}>${[
@@ -905,7 +983,7 @@ $("undo-selection").onclick = () => {
 $("sort-btn").onclick = () => {
   suitSort = !suitSort;
   savePref("guandan-sort", suitSort ? "suit" : "rank");
-  $("sort-btn").textContent = `Sort: ${suitSort ? "Suit" : "Rank"} ⇅`;
+  renderSortLabel();
   renderHand();
   renderActions();
 };
@@ -920,12 +998,28 @@ $("hint-btn").onclick = () => {
     toast("No legal response. Pass to continue.");
     return;
   }
+  // When the advisor would pass (usually because the partner is winning the
+  // trick), "Pass" is the first suggestion, followed by every legal play.
+  const suggestPass = !!game.trick && !recommended;
   if (recommended)
     all.sort((a, b) =>
       a.key === recommended.key ? -1 : b.key === recommended.key ? 1 : 0,
     );
-  const m = all[hintIndex++ % all.length];
+  const options = suggestPass ? [null, ...all] : all;
+  const m = options[hintIndex++ % options.length];
   selectionHistory.remember(selected, declared);
+  if (!m) {
+    selected = new Set();
+    declared = "";
+    renderSelection();
+    $("pass-btn").focus({ preventScroll: true });
+    toast(
+      game.trick.player === 2
+        ? "Hint: Pass. Your partner is winning this trick."
+        : "Hint: Pass. Save your cards for a better moment.",
+    );
+    return;
+  }
   selected = new Set(m.cards.map((c) => c.id));
   declared = m.key;
   renderSelection();
@@ -1136,7 +1230,10 @@ const grouping = createHandGrouping({
   cardHTML: cardsHTML,
   escape,
 });
-$("sort-btn").textContent = `Sort: ${suitSort ? "Suit" : "Rank"} ⇅`;
+function renderSortLabel() {
+  $("sort-btn").textContent = `Sort: ${suitSort ? "Suit" : "Rank"} ⇅`;
+}
+renderSortLabel();
 const preferences = createPreferences({
   showModal: modal,
   getGame: () => game,
@@ -1174,11 +1271,10 @@ const scoreboard = createScoreboard({
   playAgain: () => act("next"),
 });
 render();
-const invite = new URLSearchParams(location.search).get("room")?.toUpperCase();
-const watchCode = new URLSearchParams(location.search)
-  .get("watch")
-  ?.toUpperCase();
-const watchKey = new URLSearchParams(location.search).get("key");
+const query = new URLSearchParams(location.search),
+  invite = query.get("room")?.toUpperCase(),
+  watchCode = query.get("watch")?.toUpperCase(),
+  watchKey = query.get("key");
 const saved = new OnlineRoom(
   () => {},
   () => {},

@@ -262,7 +262,17 @@ export const messages = {
   "A fresh trick. Any legal combination.": "新一轮，可领出任意合法牌型。",
   "Your lead. Play any legal combination.": "你领出，请选择任意合法牌型。",
   "A little give and take.": "进贡还贡，有来有往。",
-  "Select any one card to return.": "选择任意一张手牌还贡。",
+  "Select a card of 10 or lower to return.": "选择一张 10 或以下的牌还贡。",
+  "Return a card of 10 or lower.": "请还一张 10 或以下的牌。",
+  "Ready to return this card.": "可以还这张牌。",
+  "Match Won": "赢得比赛",
+  "Back to 2": "降回 2",
+  "Your partner is winning this trick. Pass to let it stand, or play over it.":
+    "搭档当前领先。可以选择不出，也可以压过搭档。",
+  "Hint: Pass. Your partner is winning this trick.":
+    "提示：不出。搭档当前领先。",
+  "Hint: Pass. Save your cards for a better moment.":
+    "提示：不出。留着牌等待更好的时机。",
   "Waiting for tribute returns.": "等待其他玩家还贡。",
   "Your hand is ready. Waiting for the other players to return tribute.":
     "手牌已就绪，等待其他玩家还贡。",
@@ -361,7 +371,7 @@ export const messages = {
   "Copy this link:": "复制此链接：",
   "Room invite link": "房间邀请链接",
   "Room code:": "房间码：",
-  "The art of playing together": "掼蛋玩法与搭档配合",
+  "The Art of Playing Together": "掼蛋玩法与搭档配合",
   "The player opposite you is your partner. Play runs counterclockwise: you → right → partner → left. In AI Practice, Jade is your partner. Online 2v2 has two fixed teams; the host can fill open seats with AI players.":
     "对面的玩家是你的搭档。按逆时针顺序出牌：你 → 右手边 → 搭档 → 左手边。人机练习中，Jade 是你的搭档；在线 2 对 2 分为两支固定队伍，房主可以让电脑玩家填补空位。",
   "The Turn": "出牌顺序",
@@ -394,11 +404,11 @@ export const messages = {
     "只有获胜队伍升级，并成为下一局打级方。名次为",
   ". Promotions stop at Ace. Win as the Level Team on Ace with 1–2 or 1–3 to win the match.":
     "。最高升到 A。打 A 的队伍以头游、二游或头游、三游获胜，即赢得整场比赛。",
-  "A 1–4 result at Ace is a failed attempt. Three failed Ace attempts, even across separate visits to Ace, reset that team to 2. Losing at Ace when the opponent’s final play is entirely declared aces also resets the Level Team to 2. Challengers must become the Level Team before they can win the match.":
-    "打 A 时，头游、末游算闯关失败。累计三次打 A 失败（不要求连续）则降回 2。打 A 的队伍输掉本局，且对方最后一手全部声明为 A 时，也降回 2。挑战方必须先成为打级方，才有资格赢得整场比赛。",
+  "A 1–4 result at Ace is a failed attempt. Three failed Ace attempts, even across separate visits to Ace, reset that team to 2. Losing at Ace when the opponent’s final play is entirely declared aces also resets the Level Team to 2. Challengers climb from their own level as usual and must become the Level Team before they can win the match.":
+    "打 A 时，头游、末游算闯关失败。累计三次打 A 失败（不要求连续）则降回 2。打 A 的队伍输掉本局，且对方最后一手全部声明为 A 时，也降回 2。挑战方按自己的级数正常升级，必须先成为打级方，才有资格赢得整场比赛。",
   Tribute: "进贡与还贡",
-  "After a 1–2 finish, both losers pay their highest non-wild cards. First place receives the higher one. Otherwise, only last place pays first place. Winners return any card. Each person chooses their own return; AI players choose automatically.":
-    "双上后，两位输家各进贡自己最大的非逢人配牌，头游收较大的贡牌。其他结果由末游向头游进贡。赢家可还任意一张牌；真人自行选择还贡牌，电脑玩家自动选择。",
+  "After a 1–2 finish, both losers pay their highest non-wild cards. First place receives the higher one. Otherwise, only last place pays first place. Winners return a card of 10 or lower (any card if they hold none). Each person chooses their own return; AI players choose automatically.":
+    "双上后，两位输家各进贡自己最大的非逢人配牌，头游收较大的贡牌。其他结果由末游向头游进贡。赢家还一张 10 或以下的牌（没有则可还任意一张）；真人自行选择还贡牌，电脑玩家自动选择。",
   "Both Big Jokers among the two paying losers cancel double tribute. For single tribute, the payer must hold both. The higher or sole tribute payer leads. Without tribute, the previous winner leads.":
     "双贡时，两位进贡者合计持有两张大王即可抗贡；单贡时，进贡者须独持两张大王才能抗贡。贡牌较大者或唯一进贡者先出；抗贡后，由上一局头游先出。",
   "Table Conventions": "本桌约定",

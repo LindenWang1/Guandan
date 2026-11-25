@@ -155,7 +155,7 @@ test("seat feedback distinguishes current owner, passes and next turn without st
   assert.equal(tableStatus(g, 2).owner, false);
   assert.equal(tableStatus(g, 1).passed, false);
 });
-test("finished player can own the table and all four final placements are shown", () => {
+test("finished player can own the table; all four placements show, last place is not Finished", () => {
   const g = {
     phase: "playing",
     trick: { player: 0 },
@@ -167,7 +167,10 @@ test("finished player can own the table and all four final placements are shown"
   g.phase = "round-over";
   g.result = { order: [0, 3, 1, 2] };
   assert.equal(tableStatus(g, 2).place, 3);
-  assert.equal(tableStatus(g, 2).label, "Finished");
+  // Last place never emptied their hand, so they are placed but not "Finished".
+  assert.equal(tableStatus(g, 2).label, "");
+  assert.equal(tableStatus(g, 2).finished, false);
+  assert.equal(tableStatus(g, 0).label, "Finished");
   assert.equal(tableStatus(g, 0).owner, false);
   assert.equal(tableStatus(g, 1).passed, false);
 });

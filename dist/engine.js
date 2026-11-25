@@ -8,6 +8,14 @@ export const rankName = (r) =>
   ] || String(r);
 export const wild = (c, l) => c.r === l && c.s === "♥";
 export const strength = (r, l) => (r >= 15 ? r + 2 : r === l ? 16 : r);
+// Standard tribute rule: the card handed back must be a 10 or lower. A hand
+// with no such card may return any card.
+export const RETURN_MAX = 10;
+export function returnableCards(hand, receivedId = null) {
+  const others = hand.filter((c) => c.id !== receivedId);
+  const low = others.filter((c) => c.r <= RETURN_MAX);
+  return low.length ? low : others.length ? others : hand;
+}
 export function deck() {
   let a = [];
   for (let d = 0; d < 2; d++) {
@@ -296,9 +304,10 @@ export class Game {
       if (receiver === 0 || this.manualTribute)
         this.returns.push({ from: receiver, to: t.p, received: t.card.id });
       else {
-        let back = sorted(this.hands[receiver], this.level).find(
-          (c) => c.id !== t.card.id,
-        );
+        let back = sorted(
+          returnableCards(this.hands[receiver], t.card.id),
+          this.level,
+        )[0];
         this.hands[receiver] = this.hands[receiver].filter(
           (c) => c.id !== back.id,
         );
@@ -316,6 +325,10 @@ export class Game {
     if (ix < 0) throw Error("You have no tribute to return.");
     const c = this.hands[p].find((c) => c.id === id);
     if (!c) throw Error("Select one card from your hand.");
+    // Same rule the AI uses: a low card other than the tribute just received.
+    const received = this.returns[ix].received;
+    if (!returnableCards(this.hands[p], received).some((x) => x.id === id))
+      throw Error("Return a card of 10 or lower.");
     const [item] = this.returns.splice(ix, 1);
     this.hands[p] = this.hands[p].filter((c) => c.id !== id);
     this.hands[item.to].push(c);
@@ -416,11 +429,10 @@ export class Game {
       }
     }
     if (!gameWon) {
+      // Winners always climb from their own level; a demoted Ace team that
+      // still won the hand stays on 2 rather than climbing straight back.
       if (winner !== oldDeclarer || !demotion)
-        this.levels[winner] =
-          oldLevel === 14 && winner !== oldDeclarer
-            ? 14
-            : Math.min(14, this.levels[winner] + delta);
+        this.levels[winner] = Math.min(14, this.levels[winner] + delta);
       this.declarer = winner;
     }
     this.result = { order, winner, partnerPlace, delta, gameWon, demotion };

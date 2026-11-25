@@ -1,4 +1,4 @@
-import { Game, chooseAI, sorted } from "../dist/engine.js";
+import { Game, chooseAI, returnableCards, sorted } from "../dist/engine.js";
 import { chooseTributeReturn } from "../dist/expert-ai.js";
 import { nextMatchScorebook, rotateScorebook } from "../dist/scorebook.js";
 import {
@@ -221,9 +221,10 @@ export class RoomStore {
       if (!item) return row;
       const card = isBot(item.from)
         ? chooseTributeReturn(g.hands[item.from], item.received, g.level)
-        : sorted(g.hands[item.from], g.level).find(
-            (c) => c.id !== item.received,
-          );
+        : sorted(
+            returnableCards(g.hands[item.from], item.received),
+            g.level,
+          )[0];
       g.returnTribute(card.id, item.from);
     } else if (g.phase === "playing" && absent(g.turn)) {
       const p = g.turn,

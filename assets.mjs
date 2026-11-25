@@ -4,6 +4,7 @@ export const clientFiles = [
   "index.html",
   "style.css",
   "app.js",
+  "card-view.js",
   "boot.js",
   "engine.js",
   "expert-ai.js",

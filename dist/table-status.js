@@ -4,6 +4,9 @@ export function tableStatus(game, player) {
   const ended = ["round-over", "game-over"].includes(game.phase);
   const order = ended && game.result ? game.result.order : game.order;
   const place = order.indexOf(player);
+  // Only players who actually emptied their hand are "Finished"; the last
+  // place at the end of a hand still holds cards.
+  const finished = (game.order || []).includes(player);
   const owner = game.phase === "playing" && game.trick?.player === player;
   const active = game.phase === "playing" && game.turn === player;
   const passed =
@@ -18,9 +21,10 @@ export function tableStatus(game, player) {
     active,
     passed,
     place,
+    finished,
     label: owner
       ? "Cards on Table"
-      : place >= 0
+      : finished
         ? "Finished"
         : passed
           ? "Passed"

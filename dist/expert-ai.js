@@ -1,4 +1,4 @@
-// Expert Practice AI.
+// Expert practice AI.
 //
 // Uses only information a real player has: its own hand, the public card
 // counts, and every card already played this hand (g.playedCards). It never
@@ -13,7 +13,7 @@
 //    left after it" plus table context: help a partner who is almost out,
 //    avoid feeding an opponent who is almost out, save bombs until needed.
 
-import { deck, moves, strength, wild } from "./engine.js";
+import { deck, moves, returnableCards, strength, wild } from "./engine.js";
 
 // Every tunable number in one place. A training/tuning script can pass its own
 // object to chooseExpert(g, p, weights) and compare win rates in ai/arena.mjs.
@@ -261,13 +261,14 @@ export function chooseExpert(g, p, W = DEFAULT_WEIGHTS) {
 // the hand plan least, preferring low cards.
 export function chooseTributeReturn(hand, receivedId, level) {
   let best = null;
-  for (const c of hand) {
-    if (c.id === receivedId || wild(c, level)) continue;
+  const allowed = returnableCards(hand, receivedId);
+  for (const c of allowed) {
+    if (wild(c, level)) continue;
     const rest = hand.filter((x) => x.id !== c.id);
     const score = planScore(rest, level) + strength(c.r, level) * 1.5;
     if (!best || score < best.score) best = { c, score };
   }
-  return best?.c ?? hand.find((c) => c.id !== receivedId);
+  return best?.c ?? allowed[0];
 }
 
 export const _test = { planScore, isBoss };

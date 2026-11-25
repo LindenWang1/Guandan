@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Game, deck, moves, beats, chooseAI, wild } from "./dist/engine.js";
+import { chooseTributeReturn } from "./dist/expert-ai.js";
 let serial = 0;
 const c = (r, s = "♠") => ({ id: String(serial++), r, s });
 const cs = (r, n, s = "♠") => Array.from({ length: n }, () => c(r, s));
@@ -96,7 +97,7 @@ test("winner alone promotes; +3/+2/+1 finishes", () => {
     assert.equal(g.declarer, 0);
   }
 });
-test("ace success, challenger cannot win immediately, third failure resets", () => {
+test("ace success, challengers climb normally, third failure resets", () => {
   let g = new Game();
   g.level = 14;
   g.levels = [14, 4];
@@ -108,7 +109,10 @@ test("ace success, challenger cannot win immediately, third failure resets", () 
   g.levels = [14, 4];
   g.order = [1, 3];
   g.endRound();
-  assert.equal(g.levels[1], 14);
+  // Challengers climb normally from their own level (4 + 3), not straight to Ace.
+  assert.equal(g.levels[1], 7);
+  assert.equal(g.levels[0], 14);
+  assert.equal(g.failures[0], 1);
   assert.equal(g.phase, "round-over");
   assert.equal(g.declarer, 1);
   g = new Game();
@@ -244,4 +248,66 @@ test("move search finds mixed-suit straight even when first cards form a flush",
   const options = moves(cards, 2);
   assert(options.some((m) => m.type === "Straight" && m.value === 7));
   assert(options.some((m) => m.type === "Straight flush" && m.value === 7));
+});
+
+test("challengers near Ace stop at Ace and must then win as declarers", () => {
+  const g = new Game();
+  g.level = 14;
+  g.levels = [14, 12];
+  g.order = [1, 3];
+  g.endRound();
+  assert.equal(g.levels[1], 14);
+  assert.equal(g.phase, "round-over");
+});
+test("tribute returns must be 10 or lower unless the hand has none", () => {
+  let n = 0;
+  const c = (r, s = "♠") => ({ id: `t${n++}`, r, s });
+  const g = new Game({ manualTribute: true });
+  g.phase = "tribute";
+  g.level = 2;
+  g.hands = [[c(13), c(9), c(14)], [], [], []];
+  g.returns = [{ from: 0, to: 1, received: g.hands[0][2].id }];
+  assert.throws(() => g.returnTribute(g.hands[0][0].id, 0), /10 or lower/);
+  g.returnTribute(g.hands[0][1].id, 0);
+  assert.equal(g.phase, "playing");
+  const h = new Game({ manualTribute: true });
+  h.phase = "tribute";
+  h.level = 2;
+  h.hands = [[c(13), c(12), c(16)], [], [], []];
+  h.returns = [{ from: 0, to: 1, received: h.hands[0][2].id }];
+  h.returnTribute(h.hands[0][0].id, 0); // no low card: any card is allowed
+  assert.equal(h.phase, "playing");
+  // A low tribute card just received does not count as "having a low card".
+  const k = new Game({ manualTribute: true });
+  k.phase = "tribute";
+  k.level = 2;
+  k.hands = [[c(13), c(12), c(9)], [], [], []];
+  k.returns = [{ from: 0, to: 1, received: k.hands[0][2].id }];
+  assert.throws(() => k.returnTribute(k.hands[0][2].id, 0), /10 or lower/);
+  k.returnTribute(k.hands[0][0].id, 0);
+  assert.equal(k.phase, "playing");
+});
+test("AI tribute returns respect the 10-or-lower rule", () => {
+  for (let seed = 1; seed <= 20; seed++) {
+    let x = seed;
+    const random = () => (x = (x * 16807) % 2147483647) / 2147483647;
+    const g = new Game({ random });
+    g.deal();
+    g.result = { order: [1, 3, 0, 2], partnerPlace: 2 };
+    g.phase = "round-over";
+    const before = g.history.length;
+    g.deal();
+    for (const line of g.history.slice(before))
+      if (/ returns /.test(line)) assert.match(line, / returns (\d+)/, line);
+  }
+  const low = chooseTributeReturn(
+    [
+      { id: "a", r: 14, s: "♠" },
+      { id: "b", r: 13, s: "♠" },
+      { id: "c", r: 8, s: "♣" },
+    ],
+    "a",
+    2,
+  );
+  assert.equal(low.id, "c");
 });
