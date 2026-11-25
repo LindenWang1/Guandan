@@ -295,6 +295,13 @@ function render() {
     badge.textContent = seatStatus.label;
     badge.hidden = !seatStatus.label;
     el.classList.toggle("active", game.phase === "playing" && game.turn === p);
+    // A soft pulse shows when an AI seat is choosing its move.
+    const aiSeat =
+      mode === "practice" ? p !== 0 : !!room?.members[(room.seat + p) % 4]?.bot;
+    el.classList.toggle(
+      "thinking",
+      aiSeat && !paused && game.phase === "playing" && game.turn === p,
+    );
     el.querySelector(".avatar").textContent = playerName(p)
       .slice(0, 1)
       .toUpperCase();
@@ -326,6 +333,7 @@ function render() {
             : "27 cards"
           : `${cardCount(game.counts?.[p] ?? game.hands[p].length)}${room?.members[(room.seat + p) % 4]?.bot ? " · AI" : offline ? " · Away" : ""}`;
     el.querySelector("small").classList.toggle("finish-place", place >= 0);
+    el.querySelector("small").dataset.place = place >= 0 ? place + 1 : "";
   }
   renderHand();
   $("hand-count").textContent =
@@ -471,6 +479,7 @@ function renderHand() {
       : grouping.renderHand() ||
         '<div class="empty-hand">You’re out. Cheer on your partner.</div>';
   if ($("hand").innerHTML !== html) $("hand").innerHTML = html;
+  animateDeal();
   const selector = focus
     ? `[data-card="${CSS.escape(focus)}"]`
     : groupFocus
@@ -478,6 +487,22 @@ function renderHand() {
       : null;
   if (selector)
     document.querySelector(selector)?.focus({ preventScroll: true });
+}
+// Cards fly into the hand once per new deal (skipped under reduced motion).
+let dealtKey = null,
+  dealTimer = null;
+function animateDeal() {
+  const key = `${mode}:${room?.code || ""}:${game.round}`;
+  if (game.phase === "ready" || key === dealtKey) return;
+  dealtKey = key;
+  if (game.hands[0].length < 20) return; // joining mid-hand: no deal to show
+  const hand = $("hand");
+  hand
+    .querySelectorAll(".card")
+    .forEach((card, i) => card.style.setProperty("--deal-i", i));
+  hand.classList.add("dealing");
+  clearTimeout(dealTimer);
+  dealTimer = setTimeout(() => hand.classList.remove("dealing"), 1800);
 }
 function renderSelection() {
   document.querySelectorAll("[data-card]").forEach((card) => {

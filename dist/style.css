@@ -798,6 +798,59 @@ main {
 .finish-place {
   color: var(--gold) !important;
 }
+/* Finish-place chips: gold, silver, bronze, then plain. */
+.finish-place[data-place] {
+  display: inline-block !important;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.finish-place[data-place="1"] {
+  background: linear-gradient(135deg, #f6dd97, #c99a3c);
+  color: #3a2a08 !important;
+}
+.finish-place[data-place="2"] {
+  background: linear-gradient(135deg, #eef1f4, #a9b2bb);
+  color: #23292f !important;
+}
+.finish-place[data-place="3"] {
+  background: linear-gradient(135deg, #e7b48a, #a8683d);
+  color: #2f1a0b !important;
+}
+.finish-place[data-place="4"] {
+  background: #ffffff1a;
+  color: var(--muted) !important;
+}
+/* AI seat choosing a move. */
+.player.thinking .avatar {
+  animation: ai-thinking 1.1s ease-in-out infinite;
+}
+@keyframes ai-thinking {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 #efd39b80;
+  }
+  50% {
+    box-shadow: 0 0 0 8px #efd39b00;
+  }
+}
+/* New deal: cards drop into the hand one after another. "backwards" fill keeps
+   the start pose during the delay without overriding .selected afterwards. */
+#hand.dealing .card {
+  animation: deal-in 0.42s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+  animation-delay: calc(var(--deal-i, 0) * 28ms);
+}
+@keyframes deal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-70px) rotate(-10deg) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 .hand-panel {
   margin-top: 34px;
   border: 1px solid var(--line);
