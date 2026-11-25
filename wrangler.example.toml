@@ -1,0 +1,13 @@
+name = "guandan-game"
+main = "dist/server/index.js"
+compatibility_date = "2026-09-25"
+workers_dev = true
+
+[build]
+command = "pnpm build"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "guandan-rooms"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+migrations_dir = "drizzle"
