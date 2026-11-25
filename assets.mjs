@@ -6,6 +6,7 @@ export const clientFiles = [
   "app.js",
   "boot.js",
   "engine.js",
+  "expert-ai.js",
   "online.js",
   "rules.js",
   "i18n.js",

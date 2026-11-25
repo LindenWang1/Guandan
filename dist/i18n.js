@@ -75,11 +75,12 @@ export const messages = {
   "Table Settings": "牌桌设置",
   Practice: "练习",
   "AI Difficulty": "电脑难度",
-  Easy: "简单",
-  Normal: "普通",
+  Beginner: "入门",
+  Medium: "中等",
   Hard: "困难",
-  "Easy varies its legal moves. Normal balances cards and teamwork. Hard also protects useful combinations.":
-    "简单模式随机选择合法出牌；普通模式兼顾出牌和配合；困难模式还会保留有用的组合。",
+  Expert: "专家",
+  "Beginner often plays a random legal move. Medium balances cards and teamwork. Hard also protects useful combinations. Expert plans its whole hand, tracks every card played, and saves bombs.":
+    "入门模式经常随机出合法的牌；中等模式兼顾出牌和配合；困难模式还会保留有用的组合；专家模式会规划整手牌、记住所有已出的牌并保留炸弹。",
   "Applies to all three practice bots on their next turn.":
     "从下一回合起应用于三位练习电脑玩家。",
   "Sound & Appearance": "声音与外观",
@@ -401,8 +402,8 @@ export const messages = {
   Relaxed: "悠闲",
   Quick: "快速",
   Learning: "学习",
-  "The AI is a practice opponent: it favors longer combinations, protects its partner’s lead, and conserves bombs. It sees only its own cards and the visible card counts.":
-    "电脑用于陪练，会优先出较长的牌型、保护搭档的领出权并节省炸弹。它只能看到自己的手牌和公开的剩余牌数。",
+  "The AI is a practice opponent: it favors longer combinations, protects its partner’s lead, and conserves bombs. Every level sees only its own cards, the card counts, and the cards already played.":
+    "电脑用于陪练，会优先出较长的牌型、保护搭档的领出权并节省炸弹。每个难度都只能看到自己的手牌、公开的剩余牌数和已经出过的牌。",
   "Finish this hand first.": "请先完成本局。",
   "No tribute to return.": "当前无需还贡。",
   "You have no tribute to return.": "你无需还贡。",

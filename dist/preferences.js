@@ -2,7 +2,8 @@ import { browserStorage } from "./practice-session.js";
 import { playCue } from "./audio.js";
 
 const allowed = {
-  difficulty: ["easy", "normal", "hard"],
+  // Stored ids stay easy/normal/hard so older saved settings still load.
+  difficulty: ["easy", "normal", "hard", "expert"],
   theme: ["jade", "midnight", "plum"],
   back: ["classic", "lattice", "stars"],
   sound: ["off", "on"],
@@ -122,7 +123,7 @@ export function createPreferences({
     open() {
       showModal(
         "Table Settings",
-        `<div class="settings-grid"><section><h3>Practice</h3>${select("difficulty", "AI Difficulty", ["Easy", "Normal", "Hard"])}<p class="muted">Easy varies its legal moves. Normal balances cards and teamwork. Hard also protects useful combinations.</p><p class="muted">Applies to all three practice bots on their next turn.</p></section><section><h3>Sound & Appearance</h3>${select("sound", "Sound Effects", ["Off", "On"])}<label for="sound-volume">Volume <output id="volume-label" for="sound-volume" translate="no">${prefs.value.volume}%</output></label><input id="sound-volume" type="range" min="0" max="100" step="5" value="${prefs.value.volume}"><button id="test-sound" type="button">Test Sound</button><p id="audio-status" class="muted" role="status">Short cues only. No background music.</p>${select("theme", "Table Theme", ["Jade", "Midnight", "Plum"])}${select("back", "Card Backs", ["Classic", "Lattice", "Stars"])}<div class="back-preview" aria-hidden="true"><i class="card-back"></i><i class="card-back"></i><i class="card-back"></i></div></section></div><p class="muted">Saved on this device. Your friends can choose their own look and sound.</p>`,
+        `<div class="settings-grid"><section><h3>Practice</h3>${select("difficulty", "AI Difficulty", ["Beginner", "Medium", "Hard", "Expert"])}<p class="muted">Beginner often plays a random legal move. Medium balances cards and teamwork. Hard also protects useful combinations. Expert plans its whole hand, tracks every card played, and saves bombs.</p><p class="muted">Applies to all three practice bots on their next turn.</p></section><section><h3>Sound & Appearance</h3>${select("sound", "Sound Effects", ["Off", "On"])}<label for="sound-volume">Volume <output id="volume-label" for="sound-volume" translate="no">${prefs.value.volume}%</output></label><input id="sound-volume" type="range" min="0" max="100" step="5" value="${prefs.value.volume}"><button id="test-sound" type="button">Test Sound</button><p id="audio-status" class="muted" role="status">Short cues only. No background music.</p>${select("theme", "Table Theme", ["Jade", "Midnight", "Plum"])}${select("back", "Card Backs", ["Classic", "Lattice", "Stars"])}<div class="back-preview" aria-hidden="true"><i class="card-back"></i><i class="card-back"></i><i class="card-back"></i></div></section></div><p class="muted">Saved on this device. Your friends can choose their own look and sound.</p>`,
       );
       const slider = document.getElementById("sound-volume"),
         test = document.getElementById("test-sound");

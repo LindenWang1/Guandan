@@ -1,17 +1,18 @@
 {
   "name": "project-guandan",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.25.0",
   "scripts": {
     "start": "node serve.mjs",
     "build": "node build.mjs",
-    "test": "node --test test.mjs multiplayer.test.mjs i18n.test.mjs hand-groups.test.mjs stats.test.mjs reliability.test.mjs play-feedback.test.mjs experience.test.mjs interaction.test.mjs",
+    "test": "node --test test.mjs multiplayer.test.mjs i18n.test.mjs hand-groups.test.mjs stats.test.mjs reliability.test.mjs play-feedback.test.mjs experience.test.mjs interaction.test.mjs expert-ai.test.mjs",
     "db:generate": "drizzle-kit generate",
-    "format": "prettier --write \"dist/*.{js,css,html}\" \"server/*.js\" \"*.mjs\"",
-    "format:check": "prettier --check \"dist/*.{js,css,html}\" \"server/*.js\" \"*.mjs\"",
-    "build:demo": "node build-demo.mjs"
+    "format": "prettier --write \"dist/*.{js,css,html}\" \"server/*.js\" \"*.mjs\" \"ai/*.mjs\"",
+    "format:check": "prettier --check \"dist/*.{js,css,html}\" \"server/*.js\" \"*.mjs\" \"ai/*.mjs\"",
+    "build:demo": "node build-demo.mjs",
+    "arena": "node ai/arena.mjs"
   },
   "devDependencies": {
     "drizzle-kit": "0.31.10",

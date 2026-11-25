@@ -1,4 +1,5 @@
 import { emptyScorebook, recordScore } from "./scorebook.js";
+import { chooseExpert } from "./expert-ai.js";
 export const SUITS = ["♠", "♥", "♣", "♦"];
 export const names = ["You", "River", "Jade", "Lotus"];
 export const rankName = (r) =>
@@ -152,6 +153,7 @@ export function chooseAI(g, p, difficulty = "normal", random = Math.random) {
   if (!options.length) return null;
   const finish = options.find((m) => m.cards.length === hand.length);
   if (finish) return finish;
+  if (difficulty === "expert") return chooseExpert(g, p);
   if (g.trick && g.trick.player % 2 === p % 2) return null;
   if (difficulty === "easy" && random() < 0.6)
     return options[
