@@ -1,0 +1,33 @@
+// One asset list for the local server, production build, and smoke tests.
+
+export const clientFiles = [
+  "index.html",
+  "style.css",
+  "app.js",
+  "boot.js",
+  "engine.js",
+  "online.js",
+  "rules.js",
+  "i18n.js",
+  "hand-groups.js",
+  "hand-group-ui.js",
+  "stats.js",
+  "practice-session.js",
+  "played-history.js",
+  "emotes.js",
+  "emote-ui.js",
+  "play-feedback.js",
+  "preferences.js",
+  "audio.js",
+  "selection.js",
+  "table-status.js",
+  "turn-clock.js",
+  "turn-clock-ui.js",
+  "scorebook.js",
+  "scoreboard-ui.js",
+];
+export const contentTypes = {
+  html: "text/html; charset=utf-8",
+  css: "text/css; charset=utf-8",
+  js: "text/javascript; charset=utf-8",
+};

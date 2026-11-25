@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Guandan — The Partnership Table</title>
+    <meta
+      name="description"
+      content="Play Guandan online with friends or practice with an AI partner. A four-player partnership card game with wild cards, bombs, tribute, and the climb to Ace."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23122f29'/%3E%3Ctext x='20' y='30' text-anchor='middle' font-size='30' fill='%23e6c887'%3E♠%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <svg
+      class="decoration-definitions"
+      aria-hidden="true"
+      focusable="false"
+      width="0"
+      height="0"
+    >
+      <defs>
+        <symbol id="motif-egg" viewBox="0 0 80 100">
+          <path d="M40 8C22 8 10 45 10 63c0 39 60 39 60 0C70 45 58 8 40 8Z" />
+          <path d="m20 59 12-8 10 9 10-9 10 8M26 35c2-8 6-15 11-17" />
+        </symbol>
+        <symbol id="motif-flower" viewBox="0 0 100 100">
+          <path
+            d="M50 40C24 14 48 2 50 29c2-27 26-15 0 11C76 14 88 38 61 40c27 2 15 26-11 0 26 26 2 38 0 11-2 27-26 15 0-11C24 66 12 42 39 40c-27-2-15-26 11 0Z"
+          />
+          <circle cx="50" cy="40" r="5" />
+          <path d="M50 51v40m0-15c-20-20-26-2 0 8m0-21c20-20 26-2 0 8" />
+        </symbol>
+        <symbol id="motif-bomb" viewBox="0 0 100 100">
+          <circle cx="45" cy="61" r="29" />
+          <path
+            d="m55 33 5-12 12 5-5 13M65 23c-2-15 18-6 17-16m0 0 8 3m-8-3-2-6M26 55c0-8 4-13 11-16"
+          />
+        </symbol>
+      </defs>
+    </svg>
+    <div class="ambient-motifs" aria-hidden="true">
+      <svg class="ambient-flower" viewBox="0 0 100 100">
+        <use href="#motif-flower" /></svg
+      ><svg class="ambient-egg" viewBox="0 0 80 100">
+        <use href="#motif-egg" /></svg
+      ><svg class="ambient-bomb" viewBox="0 0 100 100">
+        <use href="#motif-bomb" />
+      </svg>
+    </div>
+    <header>
+      <a class="brand" href="./"
+        ><span class="brand-mark">掼</span
+        ><span>GUANDAN<small>THE PARTNERSHIP TABLE</small></span></a
+      >
+      <nav>
+        <button
+          type="button"
+          class="quiet language-toggle"
+          data-language-toggle
+          aria-label="Switch to Chinese"
+        >
+          中文</button
+        ><span class="practice" id="mode-label">AI PRACTICE</span
+        ><button id="rules-btn" class="quiet">How to Play</button
+        ><button id="scoreboard-btn" class="quiet">Scoreboard</button
+        ><button id="settings-btn" class="quiet">Settings</button
+        ><button id="new-btn" class="quiet">New Game</button>
+      </nav>
+    </header>
+    <main id="main">
+      <section id="startup-error" class="startup-error" role="alert" hidden>
+        <b>The table could not load.</b>
+        <p>Check your connection, then reload. / 请检查网络后重新加载。</p>
+        <button id="reload-app">Reload / 重新加载</button>
+      </section>
+      <noscript
+        ><p class="startup-error">
+          Please enable JavaScript to play. / 请启用 JavaScript。
+        </p></noscript
+      >
+      <div class="mode-bar">
+        <div class="mode-tabs" aria-label="Game mode">
+          <button id="practice-mode" class="chosen" aria-pressed="true">
+            AI Practice</button
+          ><button id="online-mode" aria-pressed="false">Online 2v2</button>
+        </div>
+        <button id="sound-btn" class="quiet" aria-pressed="false">
+          Sound Off</button
+        ><span id="connection" role="status">You + 3 AI Players</span
+        ><button id="room-btn" class="quiet" hidden>Room Details</button>
+        <button id="turn-clock-btn" class="quiet turn-clock-button">
+          <span>Turn Timer</span> <b id="turn-clock-value">Off</b>
+        </button>
+      </div>
+      <div
+        id="connection-banner"
+        class="connection-banner"
+        role="status"
+        hidden
+      >
+        <span>Connection interrupted. Your seat is reserved.</span
+        ><button id="retry-btn">Reconnect</button
+        ><button id="recover-btn">Find a Table</button>
+      </div>
+      <section id="lobby" class="lobby" hidden></section>
+      <div id="board">
+        <div id="practice-notice" class="practice-notice" hidden>
+          Practice saved on this device.
+        </div>
+        <section class="score-strip">
+          <div class="team-score">
+            <i class="team-dot"></i
+            ><span>Your Team <small id="our-names">You & Jade</small></span
+            ><strong id="our-level">2</strong>
+          </div>
+          <div class="round-label">
+            <span id="round">HAND 01</span
+            ><b id="level-label">Playing Level 2</b
+            ><small id="wild-label">2♥ is wild</small>
+          </div>
+          <div class="team-score opponents">
+            <strong id="their-level">2</strong
+            ><span
+              >Opponents
+              <small id="their-names" translate="no">River & Lotus</small></span
+            ><i class="team-dot"></i>
+          </div>
+        </section>
+        <section class="table" aria-label="Guandan card table">
+          <div class="table-line"></div>
+          <div class="table-decoration" aria-hidden="true" translate="no">
+            <svg
+              class="fortune-seal seal-left"
+              viewBox="0 0 100 100"
+              focusable="false"
+            >
+              <circle cx="50" cy="50" r="43" />
+              <circle cx="50" cy="50" r="38" />
+              <use href="#motif-egg" x="27" y="19" width="46" height="58" />
+              <path d="m17 50 4-4 4 4-4 4Zm58 0 4-4 4 4-4 4Z" />
+            </svg>
+            <svg
+              class="fortune-seal seal-right"
+              viewBox="0 0 100 100"
+              focusable="false"
+            >
+              <circle cx="50" cy="50" r="43" />
+              <circle cx="50" cy="50" r="38" />
+              <use href="#motif-flower" x="25" y="24" width="50" height="54" />
+            </svg>
+            <svg
+              class="garden-border"
+              viewBox="0 0 1000 300"
+              preserveAspectRatio="none"
+              focusable="false"
+            >
+              <g fill="none" stroke="currentColor" stroke-width="1.2">
+                <path
+                  d="M170 17h240m180 0h240M170 283h240m180 0h240M160 24h240m200 0h240M160 276h240m200 0h240"
+                />
+                <path
+                  d="M48 55Q70 20 120 20m-72 225q22 35 72 35M952 55q-22-35-72-35m72 225q-22 35-72 35"
+                />
+                <path
+                  d="M65 55q12-23 38-19-6 21-30 17m-8 192q12 23 38 19-6-21-30-17M935 55q-12-23-38-19 6 21 30 17m8 192q-12 23-38 19 6-21 30-17"
+                />
+                <path
+                  d="m425 17 9-6 9 6-9 6Zm132 0 9-6 9 6-9 6ZM425 283l9-6 9 6-9 6Zm132 0 9-6 9 6-9 6Z"
+                />
+                <circle cx="148" cy="20" r="3" />
+                <circle cx="852" cy="20" r="3" />
+                <circle cx="148" cy="280" r="3" />
+                <circle cx="852" cy="280" r="3" />
+              </g>
+            </svg>
+            <svg
+              class="garden-sprig sprig-left"
+              viewBox="0 0 100 100"
+              focusable="false"
+            >
+              <use href="#motif-flower" />
+            </svg>
+            <svg
+              class="garden-sprig sprig-right"
+              viewBox="0 0 100 100"
+              focusable="false"
+            >
+              <use href="#motif-flower" />
+            </svg>
+            <svg
+              class="felt-engraving"
+              viewBox="0 0 800 300"
+              preserveAspectRatio="none"
+              focusable="false"
+              aria-hidden="true"
+            >
+              <g fill="none" stroke="currentColor" stroke-width="1.1">
+                <path
+                  d="M180 36h80m-70 6h60m-45-12 15 6-15 6m50-12 15 6-15 6M540 36h80m-70 6h60m-45-12 15 6-15 6m50-12 15 6-15 6"
+                />
+                <path
+                  d="M110 215c-38 0-44-30-27-42 13-9 28 5 16 13-7 5-13-3-9-6m20 35c-25 6-20 27-4 27 12 0 14-13 6-15m578-12c38 0 44-30 27-42-13-9-28 5-16 13 7 5 13-3 9-6m-20 35c25 6 20 27 4 27-12 0-14-13-6-15"
+                />
+                <path
+                  d="m210 260 10-6 10 6-10 6Zm360 0 10-6 10 6-10 6ZM245 260h70m170 0h70"
+                />
+              </g>
+            </svg>
+            <span class="table-flourish flourish-left">♠</span>
+            <span class="table-flourish flourish-right">♥</span>
+            <svg
+              class="table-motif egg-motif"
+              viewBox="0 0 80 100"
+              focusable="false"
+            >
+              <use href="#motif-egg" /></svg
+            ><svg
+              class="table-motif flower-motif"
+              viewBox="0 0 100 100"
+              focusable="false"
+            >
+              <use href="#motif-flower" /></svg
+            ><svg
+              class="table-motif bomb-motif"
+              viewBox="0 0 100 100"
+              focusable="false"
+            >
+              <use href="#motif-bomb" /></svg
+            ><span class="suit-ribbon">♠ <i>♥</i> ♣ <i>♦</i></span>
+          </div>
+          <div id="player-2" class="player north">
+            <div class="avatar" translate="no">J</div>
+            <div>
+              <b>Jade <span class="partner-tag">PARTNER</span></b
+              ><small>27 cards</small>
+            </div>
+          </div>
+          <div id="player-3" class="player west">
+            <div class="avatar" translate="no">L</div>
+            <div><b>Lotus</b><small>27 cards</small></div>
+          </div>
+          <div id="player-1" class="player east">
+            <div class="avatar" translate="no">R</div>
+            <div><b>River</b><small>27 cards</small></div>
+          </div>
+          <div
+            class="table-stage"
+            tabindex="0"
+            role="region"
+            aria-label="Current table play"
+          >
+            <div class="table-center" id="table-center">
+              <div class="watermark">掼蛋</div>
+              <p class="table-title">A good hand. A better partnership.</p>
+              <p class="table-subtitle">Climb together from 2 to Ace.</p>
+              <button class="gold-btn" id="start-btn">
+                Deal the First Hand <span>↗</span>
+              </button>
+            </div>
+            <div id="last-action" class="last-action">
+              108 Cards · 4 Players · 2 Teams
+            </div>
+          </div>
+          <div id="player-0" class="player south">
+            <div class="avatar" translate="no">Y</div>
+            <div><b>You</b><small>Your seat</small></div>
+          </div>
+          <span class="table-corner">COUNTERCLOCKWISE ↺</span>
+        </section>
+        <section class="hand-panel">
+          <div class="hand-heading">
+            <div>
+              <h1>Your Hand <span id="hand-count">27 cards to begin</span></h1>
+              <p id="status" role="status" aria-live="polite">
+                Take your seat. Your partner is across the table.
+              </p>
+            </div>
+            <div class="hand-tools">
+              <button id="history-btn" class="quiet">Hand History ↗</button
+              ><button id="pause-btn" class="quiet" aria-pressed="false">
+                Pause</button
+              ><button id="played-btn" class="quiet">Played Cards</button
+              ><button
+                id="organize-btn"
+                class="quiet"
+                aria-controls="group-controls"
+                aria-expanded="false"
+              >
+                Organize</button
+              ><button id="sort-btn" class="quiet" disabled>
+                Sort: Rank ⇅
+              </button>
+            </div>
+          </div>
+          <div
+            class="hand-scroll"
+            tabindex="0"
+            role="region"
+            aria-label="Your cards and saved groups"
+          >
+            <p class="selection-tip">
+              Tip: Shift-click to select a range. Undo changes only your
+              selection.
+            </p>
+            <div id="hand" class="hand">
+              <div class="empty-hand">
+                Your cards will appear here after the deal.
+              </div>
+            </div>
+          </div>
+          <div class="action-bar">
+            <div id="table-reminder" class="table-reminder" hidden></div>
+            <div
+              id="selection-preview"
+              class="selection-preview"
+              aria-label="Selected cards"
+              hidden
+            ></div>
+            <div class="action-context">
+              <strong id="turn-indicator" data-state="waiting"
+                >Ready to play</strong
+              ><span id="selection-label"
+                >Select cards to make a combination</span
+              >
+            </div>
+            <select
+              id="declaration"
+              aria-label="Declare Combination"
+              hidden
+            ></select>
+            <div class="actions">
+              <button
+                id="undo-selection"
+                aria-label="Undo Selection"
+                title="Undo Selection"
+                disabled
+              >
+                Undo</button
+              ><button id="clear-btn" disabled>Clear</button
+              ><button id="hint-btn" disabled>Hint <span>✧</span></button
+              ><button id="pass-btn" disabled>Pass</button
+              ><button id="play-btn" class="gold-btn" disabled>
+                Play Cards
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+      <footer>
+        <span
+          >♠ <b>Play the long game.</b> Help your partner finish first.</span
+        >
+      </footer>
+    </main>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+    <dialog id="modal" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h2 id="modal-title"></h2>
+        <button
+          type="button"
+          class="language-toggle"
+          data-language-toggle
+          aria-label="Switch to Chinese"
+        >
+          中文</button
+        ><button id="close-modal" aria-label="Close dialog">✕</button>
+      </div>
+      <div id="modal-body"></div>
+    </dialog>
+    <script type="module" src="boot.js"></script>
+  </body>
+</html>
