@@ -1,0 +1,9 @@
+node_modules/
+.local/
+dist/server/
+demo/
+_site/
+*.tar.gz
+wrangler.toml
+.wrangler/
+.DS_Store

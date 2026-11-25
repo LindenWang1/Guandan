@@ -1,0 +1,25 @@
+{
+  "name": "project-guandan",
+  "version": "2.9.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "start": "node serve.mjs",
+    "build": "node build.mjs",
+    "test": "node --test test.mjs multiplayer.test.mjs i18n.test.mjs hand-groups.test.mjs stats.test.mjs reliability.test.mjs play-feedback.test.mjs experience.test.mjs interaction.test.mjs",
+    "db:generate": "drizzle-kit generate",
+    "format": "prettier --write \"dist/*.{js,css,html}\" \"server/*.js\" \"*.mjs\"",
+    "format:check": "prettier --check \"dist/*.{js,css,html}\" \"server/*.js\" \"*.mjs\"",
+    "build:demo": "node build-demo.mjs"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.31.10",
+    "drizzle-orm": "0.45.2",
+    "esbuild": "0.25.12",
+    "prettier": "3.6.2"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
