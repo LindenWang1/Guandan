@@ -2,6 +2,7 @@ import { browserStorage, practiceSession } from "./practice-session.js";
 import { createPlayedHistory } from "./played-history.js";
 import { createHandGrouping } from "./hand-group-ui.js";
 import { validSort } from "./hand-sort.js";
+import { createTakeBack } from "./take-back.js";
 import { installLanguageToggle } from "./i18n.js";
 import {
   Game,
@@ -18,7 +19,12 @@ import { createEmotes } from "./emote-ui.js";
 import { playFeedback } from "./play-feedback.js";
 import { showRules } from "./rules.js";
 import { practiceStats } from "./stats.js";
-import { createPreferences } from "./preferences.js";
+import {
+  createPreferences,
+  paceFrom,
+  DEFAULT_PACE,
+  leadDelay,
+} from "./preferences.js";
 import { SelectionHistory, selectionRange } from "./selection.js";
 import { tableStatus } from "./table-status.js";
 import { nextMatchScorebook } from "./scorebook.js";
@@ -58,6 +64,8 @@ const selectionHistory = new SelectionHistory();
 let visualSignature = "",
   selectionAnchor = null;
 let paused = !!recovered;
+// Take Back keeps a snapshot before each of your practice moves.
+const takeBack = createTakeBack();
 let game = recovered || new Game(),
   mode = "practice",
   net = null,
@@ -68,9 +76,7 @@ let game = recovered || new Game(),
   timer = null,
   hintIndex = 0,
   declared = "",
-  speed = [450, 950, 1600].includes(Number(loadPref("guandan-speed", "950")))
-    ? Number(loadPref("guandan-speed", "950"))
-    : 950,
+  speed = paceFrom(loadPref("guandan-speed", String(DEFAULT_PACE))),
   busy = false,
   connected = true,
   toastTimer = null;
@@ -496,6 +502,7 @@ function render() {
     : "Practice saved on this device.";
   if (paused) status("Practice paused. Resume when you are ready.");
   $("organize-btn").disabled = !game.hands[0].length || game.phase === "ready";
+  renderTakeBack();
   const reminder = $("table-reminder");
   reminder.hidden = game.phase !== "playing";
   reminder.innerHTML = game.trick
@@ -737,29 +744,41 @@ function schedule() {
     !paused &&
     !document.hidden
   )
-    timer = setTimeout(() => {
-      const p = game.turn,
-        m = chooseAI(game, p, preferences.difficulty);
-      try {
-        if (m)
-          game.play(
-            p,
-            m.cards.map((c) => c.id),
-            m.key,
-          );
-        else game.pass(p);
-        render();
-        schedule();
-      } catch (e) {
-        toast(e.message);
-      }
-    }, speed);
+    timer = setTimeout(
+      () => {
+        const p = game.turn,
+          m = chooseAI(game, p, preferences.difficulty);
+        try {
+          if (m)
+            game.play(
+              p,
+              m.cards.map((c) => c.id),
+              m.key,
+            );
+          else game.pass(p);
+          render();
+          schedule();
+        } catch (e) {
+          toast(e.message);
+        }
+      },
+      game.trick ? speed : leadDelay(speed),
+    );
+}
+function setSpeed(value) {
+  speed = paceFrom(value);
+  savePref("guandan-speed", String(speed));
 }
 async function act(action, payload = {}) {
   if (room?.spectator) return;
   if (busy) return;
   busy = true;
   renderActions();
+  const snapshot =
+    mode === "practice" &&
+    preferences.takeBack &&
+    ["play", "pass", "tribute"].includes(action);
+  if (snapshot) takeBack.remember(game);
   try {
     if (mode === "online") await net.action(action, payload);
     else if (action === "play")
@@ -780,12 +799,32 @@ async function act(action, payload = {}) {
     declared = "";
     hintIndex = 0;
   } catch (e) {
+    if (snapshot) takeBack.discard();
     toast(e.message);
   } finally {
     busy = false;
     render();
     schedule();
   }
+}
+$("takeback-btn").onclick = () => {
+  if (busy || mode !== "practice") return;
+  clearTimeout(timer);
+  const restored = takeBack.restore(game);
+  if (!restored) return;
+  game = restored;
+  selected.clear();
+  selectionHistory.clear();
+  declared = "";
+  hintIndex = 0;
+  toast("Took back your last move.");
+  render();
+  schedule();
+};
+function renderTakeBack() {
+  const button = $("takeback-btn");
+  button.hidden = mode !== "practice" || !preferences.takeBack;
+  button.disabled = busy || !takeBack.available(game);
 }
 function showOnline(joinCode = "") {
   if (mode === "online" && room) {
@@ -1088,10 +1127,7 @@ $("rules-btn").onclick = () =>
   showRules({
     game,
     speed,
-    setSpeed: (v) => {
-      speed = v;
-      savePref("guandan-speed", String(v));
-    },
+    setSpeed,
     showModal: modal,
     $,
   });
@@ -1299,6 +1335,9 @@ const preferences = createPreferences({
   getGame: () => game,
   getRoom: () => room,
   isPaused: () => paused,
+  onChange: () => render(),
+  getPace: () => speed,
+  setPace: setSpeed,
 });
 $("sound-btn").onclick = () => preferences.toggleSound();
 $("settings-btn").onclick = () => preferences.open();

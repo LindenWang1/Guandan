@@ -246,6 +246,14 @@ export const messages = {
   "Select cards to make a combination": "选择手牌组成牌型",
   "These cards cannot beat the table. Try Hint.":
     "所选手牌无法压过当前牌型，请试试提示。",
+  // Take Back (AI Practice).
+  "Take Back ↶": "悔牌 ↶",
+  "Take Back Moves": "允许悔牌",
+  "AI Practice only. Adds a Take Back button that returns the table to just before your last play or pass in this hand.":
+    "仅限人机练习。开启后显示“悔牌”按钮，可回到本局你上一次出牌或不出之前。",
+  "Return to just before your last move (AI Practice)":
+    "回到你上一步之前（人机练习）",
+  "Took back your last move.": "已悔牌，回到你上一步之前。",
   // Sorting and arranging the hand.
   Sort: "排序",
   "Rank: Low to High": "点数：从小到大",
@@ -436,6 +444,9 @@ export const messages = {
   "Equal tribute cards are ordered counterclockwise from the previous winner; the first payer leads. The first hand’s opening player is random, equivalent to drawing the turned-up card. Shuffling and drawing are automatic. A hand ends as soon as one partnership is out.":
     "贡牌相同时，从上一局头游起按逆时针顺序确定进贡顺序，排在前面的进贡者先出。首局随机决定先出者，相当于抽到明牌。洗牌和摸牌自动完成；一队两人都出完手牌时，本局结束。",
   "AI Pace": "电脑出牌速度",
+  Normal: "正常",
+  "How long each AI player waits before moving. A new trick starts after a slightly longer pause.":
+    "每位电脑玩家出牌前的等待时间。新一轮开始前会稍作停顿。",
   Relaxed: "悠闲",
   Quick: "快速",
   Learning: "学习",

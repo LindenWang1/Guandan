@@ -12,7 +12,8 @@ import { validEmote, EMOTE_DURATION, EMOTE_COOLDOWN } from "../dist/emotes.js";
 const TTL = 24 * 60 * 60 * 1000;
 export const BOT_LEVELS = ["easy", "normal", "hard", "expert"];
 const BOT_NAMES = ["River", "Jade", "Lotus", "Willow", "Pine", "Maple"];
-const BOT_PACE = 800; // ms between moves by AI seats
+const BOT_PACE = 1500; // ms between moves by AI seats
+const BOT_LEAD_PACE = 2100; // ...and before an AI seat leads a new trick
 const ABSENT_PACE = 1500; // ms between moves made for absent humans
 // Lineup changes clear readiness for people; AI seats are always ready.
 const unready = (room) =>
@@ -218,7 +219,12 @@ export class RoomStore {
       g.phase === "tribute"
         ? g.returns.find((x) => absent(x.from))?.from
         : g.turn;
-    const pace = actor !== undefined && isBot(actor) ? BOT_PACE : ABSENT_PACE;
+    const pace =
+      actor !== undefined && isBot(actor)
+        ? g.phase === "playing" && !g.trick
+          ? BOT_LEAD_PACE
+          : BOT_PACE
+        : ABSENT_PACE;
     if (now - (room.botMovedAt || 0) < pace) return row;
     if (timedOut && !isBot(g.turn)) {
       timeoutMove(g);

@@ -76,7 +76,7 @@ Needs Node.js 24+ and pnpm 11.25.0 (`npm install -g pnpm@11.25.0`).
 ```bash
 pnpm install --frozen-lockfile
 pnpm start            # http://127.0.0.1:4174, with practice AND online rooms (local database)
-pnpm test             # 100 tests: rules, AI, online rooms, AI seats, translations
+pnpm test             # 106 tests: rules, AI, online rooms, AI seats, translations
 pnpm arena            # Expert vs Hard AI match; or: node ai/arena.mjs expert medium 300
 pnpm build:demo       # demo/guandan-demo.html, a single file you can open anywhere
 ```
@@ -123,7 +123,7 @@ dist/              the website (edited directly, not generated, apart from dist/
 server/            online room API (rooms.js), Cloudflare Worker entry, local SQLite adapter
 ai/arena.mjs       AI vs AI matches with mirrored deals
 db/, drizzle/      database schema and migrations
-*.test.mjs         100 automated tests
+*.test.mjs         106 automated tests
 docs/              deployment guide, file guide, earlier changelog, review notes, screenshots
 .github/workflows/ ci.yml (tests) and pages.yml (practice site)
 ```

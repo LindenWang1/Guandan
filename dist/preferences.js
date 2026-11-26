@@ -1,12 +1,37 @@
 import { browserStorage } from "./practice-session.js";
 import { playCue } from "./audio.js";
 
+// AI pace: milliseconds each practice AI waits before moving. Leading a new
+// trick waits a little longer, so you can see who won the last one.
+export const AI_PACES = [
+  [1000, "Quick"],
+  [1500, "Normal"],
+  [2000, "Relaxed"],
+  [3000, "Learning"],
+];
+export const DEFAULT_PACE = 2000;
+// Paces saved by earlier versions keep their name: Quick, Relaxed (the old
+// default) and Learning. Any other number moves to the nearest choice.
+const LEGACY_PACES = { 450: 1000, 950: 2000, 1600: 3000 };
+export function paceFrom(saved) {
+  const n = Number(saved);
+  if (!Number.isFinite(n) || n <= 0) return DEFAULT_PACE;
+  if (LEGACY_PACES[n]) return LEGACY_PACES[n];
+  return AI_PACES.map(([ms]) => ms).reduce((best, ms) =>
+    Math.abs(ms - n) < Math.abs(best - n) ? ms : best,
+  );
+}
+export const leadDelay = (pace) => pace + 600;
+export const paceSelect = (id, pace) =>
+  `<select id="${id}">${AI_PACES.map(([ms, name]) => `<option value="${ms}" ${pace === ms ? "selected" : ""}>${name}</option>`).join("")}</select>`;
+
 const allowed = {
   // Stored ids stay easy/normal/hard so older saved settings still load.
   difficulty: ["easy", "normal", "hard", "expert"],
   theme: ["jade", "midnight", "plum"],
   back: ["classic", "lattice", "stars"],
   sound: ["off", "on"],
+  takeBack: ["off", "on"],
 };
 export function preferences(storage = browserStorage()) {
   const value = {
@@ -14,6 +39,7 @@ export function preferences(storage = browserStorage()) {
     theme: "jade",
     back: "classic",
     sound: "off",
+    takeBack: "off",
     volume: 50,
   };
   try {
@@ -58,6 +84,9 @@ export function createPreferences({
   getGame,
   getRoom,
   isPaused = () => false,
+  onChange = () => {},
+  getPace = () => DEFAULT_PACE,
+  setPace = () => {},
 }) {
   const prefs = preferences();
   let audio,
@@ -120,11 +149,16 @@ export function createPreferences({
     get difficulty() {
       return prefs.value.difficulty;
     },
+    get takeBack() {
+      return prefs.value.takeBack === "on";
+    },
     open() {
       showModal(
         "Table Settings",
-        `<div class="settings-grid"><section><h3>Practice</h3>${select("difficulty", "AI Difficulty", ["Beginner", "Medium", "Hard", "Expert"])}<p class="muted">Beginner often plays a random legal move. Medium balances cards and teamwork. Hard also protects useful combinations. Expert plans its whole hand, tracks every card played, and saves bombs.</p><p class="muted">Applies to all three practice bots on their next turn.</p></section><section><h3>Sound & Appearance</h3>${select("sound", "Sound Effects", ["Off", "On"])}<label for="sound-volume">Volume <output id="volume-label" for="sound-volume" translate="no">${prefs.value.volume}%</output></label><input id="sound-volume" type="range" min="0" max="100" step="5" value="${prefs.value.volume}"><button id="test-sound" type="button">Test Sound</button><p id="audio-status" class="muted" role="status">Short cues only. No background music.</p>${select("theme", "Table Theme", ["Jade", "Midnight", "Plum"])}${select("back", "Card Backs", ["Classic", "Lattice", "Stars"])}<div class="back-preview" aria-hidden="true"><i class="card-back"></i><i class="card-back"></i><i class="card-back"></i></div></section></div><p class="muted">Saved on this device. Your friends can choose their own look and sound.</p>`,
+        `<div class="settings-grid"><section><h3>Practice</h3>${select("difficulty", "AI Difficulty", ["Beginner", "Medium", "Hard", "Expert"])}<p class="muted">Beginner often plays a random legal move. Medium balances cards and teamwork. Hard also protects useful combinations. Expert plans its whole hand, tracks every card played, and saves bombs.</p><p class="muted">Applies to all three practice bots on their next turn.</p><label for="pref-pace">AI Pace</label>${paceSelect("pref-pace", getPace())}<p class="muted">How long each AI player waits before moving. A new trick starts after a slightly longer pause.</p>${select("takeBack", "Take Back Moves", ["Off", "On"])}<p class="muted">AI Practice only. Adds a Take Back button that returns the table to just before your last play or pass in this hand.</p></section><section><h3>Sound & Appearance</h3>${select("sound", "Sound Effects", ["Off", "On"])}<label for="sound-volume">Volume <output id="volume-label" for="sound-volume" translate="no">${prefs.value.volume}%</output></label><input id="sound-volume" type="range" min="0" max="100" step="5" value="${prefs.value.volume}"><button id="test-sound" type="button">Test Sound</button><p id="audio-status" class="muted" role="status">Short cues only. No background music.</p>${select("theme", "Table Theme", ["Jade", "Midnight", "Plum"])}${select("back", "Card Backs", ["Classic", "Lattice", "Stars"])}<div class="back-preview" aria-hidden="true"><i class="card-back"></i><i class="card-back"></i><i class="card-back"></i></div></section></div><p class="muted">Saved on this device. Your friends can choose their own look and sound.</p>`,
       );
+      document.getElementById("pref-pace").onchange = (e) =>
+        setPace(Number(e.target.value));
       const slider = document.getElementById("sound-volume"),
         test = document.getElementById("test-sound");
       const updateAudioControls = () => {
@@ -149,6 +183,7 @@ export function createPreferences({
           (el.onchange = async () => {
             prefs.set(el.dataset.pref, el.value);
             apply();
+            onChange(el.dataset.pref);
             updateAudioControls();
             if (el.dataset.pref === "sound" && el.value === "on") {
               await unlock();
