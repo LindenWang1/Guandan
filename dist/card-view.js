@@ -7,7 +7,13 @@ export const isRedCard = (c) => c.s === "♥" || c.s === "♦" || c.r === 16;
 
 export function cardHTML(
   c,
-  { level, interactive = false, selected = false, unavailable = false } = {},
+  {
+    level,
+    interactive = false,
+    selected = false,
+    unavailable = false,
+    received = false,
+  } = {},
 ) {
   const tag = interactive ? "button" : "div",
     isWild = wild(c, level),
@@ -20,6 +26,7 @@ export function cardHTML(
     joker && "joker",
     interactive && selected && "selected",
     interactive && unavailable && "unavailable",
+    interactive && received && "tribute-received",
   ]
     .filter(Boolean)
     .join(" ");

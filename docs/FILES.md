@@ -1,4 +1,4 @@
-# File Guide (Version 3.1)
+# File Guide (Version 3.2)
 
 ## Website (`dist/`)
 
@@ -9,9 +9,9 @@ The site is plain HTML, CSS and JavaScript modules, edited directly. Only
 | --- | --- |
 | `index.html`, `style.css` | Page structure, table layout, themes and responsive styles |
 | `boot.js`, `app.js` | Startup recovery and the table interface for practice and online play |
-| `engine.js` | Shared rules: legal combinations, wild cards, bombs, tribute, levels; Beginner/Medium/Hard AI |
+| `engine.js` | Shared rules: legal combinations, wild cards, bombs, tribute (with a record of each hand's tribute cards), levels; Beginner/Medium/Hard AI |
 | `expert-ai.js` | Expert AI: hand planning, played-card tracking, `DEFAULT_WEIGHTS`, tribute-return choice |
-| `card-view.js` | Card markup used by the hand, the table, grouped cards and the played-card history |
+| `card-view.js` | Card markup used by the hand, the table, grouped cards and the played-card history; outlines a received tribute card |
 | `table-status.js` | Per-seat labels: to play, passed, cards on table, finished, place |
 | `online.js` | Room connection, saved seat, retries and stale-response protection |
 | `practice-session.js`, `stats.js` | Saving practice games on the device; win statistics |
@@ -45,12 +45,13 @@ The site is plain HTML, CSS and JavaScript modules, edited directly. Only
 `pnpm test` runs every `*.test.mjs` file: rules and scoring (`test.mjs`), online rooms
 (`multiplayer.test.mjs`, `online-bots.test.mjs`), AI (`expert-ai.test.mjs`), translations
 (`i18n.test.mjs`), and interface models and reliability (`experience`, `interaction`,
-`play-feedback`, `reliability`, `stats`, `hand-groups`, `card-view`).
+`play-feedback`, `reliability`, `stats`, `hand-groups`, `card-view`), and the tribute
+markers (`tribute-markers.test.mjs`).
 
 ## Docs
 
 - `DEPLOY.md`: running locally and deploying to Cloudflare.
-- `UPDATE-v3.1.md`: the latest changes. `UPDATE-v2.9.md`, `CHANGELOG-v2.md`, `REVIEW-v2.md`: history of earlier versions (they mention files from those releases that are no longer part of the project).
+- `UPDATE-v3.2.md`: the latest changes. `UPDATE-v3.1.md`, `UPDATE-v2.9.md`, `CHANGELOG-v2.md`, `REVIEW-v2.md`: history of earlier versions (they mention files from those releases that are no longer part of the project).
 - `screenshots/`: images used by the README and the earlier reviews.
 
 ## Not Committed

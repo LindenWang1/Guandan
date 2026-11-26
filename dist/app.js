@@ -124,7 +124,36 @@ const cardsHTML = (c, interactive = false) =>
     interactive,
     selected: interactive && selected.has(c.id),
     unavailable: interactive && owesTribute() && !returnable(c.id),
+    // The tribute just received is outlined while you choose what to return.
+    received:
+      interactive && owesTribute() && c.id === game.returns?.[0]?.received,
   });
+// Tribute marker beside a seat: what that player paid, returned or received
+// this hand. Shown while the hand is played; hidden on the first hand.
+const tributeCardName = (c) =>
+  c.r >= 15 ? rankName(c.r) : `${rankName(c.r)}${c.s}`;
+function tributeMarker(p) {
+  const list = game.tributes || [];
+  if (!list.length || !["tribute", "playing"].includes(game.phase)) return "";
+  if (list.some((t) => t.kind === "resist"))
+    return list.some((t) => t.from === p)
+      ? '<span class="tribute-label">Resisted</span>'
+      : '<span class="tribute-label">No Tribute</span>';
+  const parts = [];
+  for (const t of list) {
+    if (t.kind === "pay" && t.from === p) parts.unshift(["Paid", t.card]);
+    if (t.kind === "pay" && t.to === p) parts.unshift(["Got", t.card]);
+    if (t.kind === "return" && t.from === p) parts.push(["Returned", t.card]);
+    if (t.kind === "return" && t.to === p) parts.push(["Got Back", t.card]);
+  }
+  if (!parts.length) return '<span class="tribute-label">No Tribute</span>';
+  return parts
+    .map(
+      ([label, c]) =>
+        `<span class="tribute-label">${label}</span><span class="tribute-card${isRedCard(c) ? " red" : ""}"${c.r >= 15 ? "" : ' translate="no"'}>${tributeCardName(c)}</span>`,
+    )
+    .join("");
+}
 function legalSelection() {
   if (!selected.size) return [];
   return moves(
@@ -361,6 +390,19 @@ function render() {
       seatPlay.textContent = showPlay ? lastMove : "";
     seatPlay.hidden = !showPlay;
     seatPlay.classList.toggle("is-pass", lastMove === "Pass");
+    let tribute = el.querySelector(".tribute-chip");
+    if (!tribute) {
+      tribute = document.createElement("span");
+      tribute.className = "tribute-chip";
+      el.append(tribute);
+    }
+    const marker = tributeMarker(p);
+    if (tribute.dataset.marker !== marker) {
+      tribute.dataset.marker = marker;
+      tribute.innerHTML = marker;
+    }
+    tribute.hidden = !marker;
+    tribute.classList.toggle("is-none", marker.includes(">No Tribute<"));
     // Few cards left: a player close to going out deserves attention.
     const left = game.counts?.[p] ?? game.hands[p].length;
     const live = game.phase === "playing" && left > 0 && place < 0;
@@ -562,6 +604,11 @@ function renderHand() {
       : grouping.renderHand() ||
         '<div class="empty-hand">You’re out. Cheer on your partner.</div>';
   if ($("hand").innerHTML !== html) $("hand").innerHTML = html;
+  // Card count drives the overlap that keeps the hand in one row (style.css).
+  $("hand").style.setProperty(
+    "--n",
+    Math.max(1, $("hand").querySelectorAll(".card").length),
+  );
   animateDeal();
   const selector = focus
     ? `[data-card="${CSS.escape(focus)}"]`

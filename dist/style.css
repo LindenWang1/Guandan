@@ -4044,3 +4044,215 @@ button.card.unavailable:hover:not(:disabled) {
 #board > .table[data-phase="game-over"] {
   flex-basis: clamp(250px, 34dvh, 310px);
 }
+
+/* v3.2: Tribute markers. A small tag beside each seat shows the card that
+   seat paid, returned or received this hand, on the side facing the table. */
+.player .tribute-chip {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #efd39b66;
+  background: #0e231cf0;
+  color: #cdbfae;
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateY(-50%);
+  z-index: 3;
+}
+.player .tribute-chip[hidden] {
+  display: none;
+}
+.player .tribute-chip .tribute-card {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #fffef8;
+  color: #183a32;
+  font:
+    700 11px/1.2 Georgia,
+    serif;
+}
+.player .tribute-chip .tribute-card.red {
+  color: #b3263a;
+}
+.player .tribute-chip .tribute-card + .tribute-label {
+  margin-left: 4px;
+}
+.player .tribute-chip.is-none {
+  border-style: dashed;
+  border-color: #d6b79c44;
+  color: #a99d8c;
+}
+.player.west .tribute-chip {
+  left: calc(100% + 8px);
+}
+.player.east .tribute-chip,
+.player.north .tribute-chip,
+.player.south .tribute-chip {
+  right: calc(100% + 8px);
+}
+.hand .card.tribute-received {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 5px #efd39b33,
+    0 4px 8px #001c1855;
+}
+
+/* v3.2: On wider screens your whole hand sits in one row. Cards overlap only
+   as much as they must (the rank and suit corner always shows), so the table
+   and your hand fit on one screen without scrolling. */
+@media (min-width: 851px) {
+  /* Loose cards and saved groups share one row: groups sit to the right. */
+  .hand-scroll {
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+  .hand-scroll > * {
+    grid-column: 1 / -1;
+  }
+  .hand-scroll > #hand {
+    grid-column: 1;
+    container-type: inline-size;
+  }
+  .hand-scroll > #grouped-cards {
+    grid-column: 2;
+    max-width: 48cqw;
+    margin: 0 14px 10px 4px;
+    padding: 4px 6px;
+  }
+  .hand-scroll > #grouped-cards[hidden],
+  .hand-scroll > #group-controls[hidden] {
+    display: none;
+  }
+  /* Each group is labelled ("Pair · 5"), so the tray needs no heading. */
+  .hand-scroll .grouped-intro {
+    display: none;
+  }
+  .hand-scroll .grouped-list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+  }
+  .hand-scroll .saved-group {
+    flex: 0 0 auto;
+    padding: 3px 5px 5px;
+  }
+  .hand-scroll .saved-group .group-heading {
+    min-height: 0;
+    margin: 0;
+  }
+  .hand-scroll .saved-group .group-heading button {
+    min-height: 24px;
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+  .hand-scroll .saved-group .group-cards {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    padding-top: 4px;
+  }
+  .hand-scroll .saved-group .card {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 64px;
+  }
+  .hand-scroll .saved-group .card + .card {
+    margin-left: -22px;
+  }
+  /* Organize tools on one line; the range tip hides while they are open. */
+  .hand-scroll .group-controls {
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 4px 14px 8px;
+  }
+  .hand-scroll .group-buttons {
+    flex-wrap: nowrap;
+  }
+  .hand-scroll .group-buttons button {
+    min-height: 30px;
+    padding: 4px 9px;
+    white-space: nowrap;
+  }
+  .hand-scroll #group-help {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hand-scroll:has(> #group-controls:not([hidden])) .selection-tip {
+    display: none;
+  }
+  .hand-scroll .hand {
+    --card-w: clamp(58px, 5.2vw, 76px);
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 0;
+    padding: 16px 14px 12px;
+  }
+  .hand-scroll .hand > .card {
+    flex: 0 0 var(--card-w);
+    width: var(--card-w);
+  }
+  .hand-scroll .hand > .card + .card {
+    margin-left: min(
+      7px,
+      calc((100cqw - var(--n, 27) * var(--card-w)) / max(var(--n, 27) - 1, 1))
+    );
+  }
+  .hand-scroll .hand > .card:hover,
+  .hand-scroll .hand > .card:focus-visible {
+    z-index: 2;
+  }
+  /* Raised cards lift but stay in order, so the next card's corner shows. */
+  .hand-scroll .hand > .card.tribute-received:not(.selected) {
+    transform: translateY(-6px);
+  }
+  /* Overlapping cards must stay solid: dim the colours instead of fading. */
+  .hand-scroll .hand > .card.unavailable {
+    opacity: 1;
+    filter: saturate(0.3) brightness(0.62);
+  }
+  .hand-scroll .hand > .card.tribute-received.unavailable {
+    filter: none;
+  }
+}
+
+/* v3.2: Short laptop screens (720-800 px tall) trim spacing so the table,
+   your hand, saved groups and the action buttons still fit together. */
+@media (min-width: 851px) and (max-height: 800px) {
+  #board .hand-heading {
+    padding: 6px 14px 2px;
+  }
+  .hand-scroll .group-controls {
+    padding: 2px 14px 4px;
+  }
+  .hand-scroll .hand {
+    padding: 12px 14px 8px;
+  }
+  .hand-scroll > #grouped-cards {
+    margin-bottom: 6px;
+  }
+  .hand-scroll .saved-group .card {
+    height: 58px;
+  }
+}
+
+/* v3.2: Keep the table anchored under the header. Centring it vertically made
+   the whole board jump whenever the hand area changed height (tribute, a
+   finished hand, opening Organize). */
+@media (min-width: 851px) {
+  body > main {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}

@@ -143,6 +143,12 @@ export function publicView(row, seat, now = Date.now()) {
         ...e,
         player: rel(e.player),
       })),
+      // Tribute cards are shown face up at a real table, so every seat sees them.
+      tributes: (g.tributes || []).map((t) => ({
+        ...t,
+        from: rel(t.from),
+        ...(t.to === undefined ? {} : { to: rel(t.to) }),
+      })),
       returns: g.returns
         .filter((x) => !spectator && x.from === seat)
         .map((x) => ({ ...x, from: 0, to: rel(x.to) })),

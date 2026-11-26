@@ -235,6 +235,9 @@ export class Game {
     this.result = null;
     this.scorebook = emptyScorebook();
     this.returns = [];
+    // What changed hands in this hand's tribute, for the seat markers:
+    // { kind: "pay" | "return", from, to, card } or { kind: "resist", from }.
+    this.tributes = [];
     this.finishMoves = [null, null, null, null];
   }
   log(message) {
@@ -258,6 +261,7 @@ export class Game {
     this.playedCards = [];
     this.finishMoves = [null, null, null, null];
     this.returns = [];
+    this.tributes = [];
     this.phase = "playing";
     this.turn = this.result?.order[0] ?? Math.floor(this.random() * 4);
     this.log(
@@ -275,6 +279,7 @@ export class Game {
       0,
     );
     if (reds === 2) {
+      this.tributes = losers.map((p) => ({ kind: "resist", from: p }));
       this.log("Tribute resisted: losing side holds both Big Jokers.");
       this.turn = order[0];
       return;
@@ -298,6 +303,12 @@ export class Game {
       let receiver = order[i];
       this.hands[t.p] = this.hands[t.p].filter((c) => c.id !== t.card.id);
       this.hands[receiver].push(t.card);
+      this.tributes.push({
+        kind: "pay",
+        from: t.p,
+        to: receiver,
+        card: t.card,
+      });
       this.log(
         `${this.names[t.p]} pays ${rankName(t.card.r)}${t.card.s} to ${this.names[receiver]}.`,
       );
@@ -312,6 +323,12 @@ export class Game {
           (c) => c.id !== back.id,
         );
         this.hands[t.p].push(back);
+        this.tributes.push({
+          kind: "return",
+          from: receiver,
+          to: t.p,
+          card: back,
+        });
         this.log(
           `${this.names[receiver]} returns ${rankName(back.r)}${back.s} to ${this.names[t.p]}.`,
         );
@@ -332,6 +349,12 @@ export class Game {
     const [item] = this.returns.splice(ix, 1);
     this.hands[p] = this.hands[p].filter((c) => c.id !== id);
     this.hands[item.to].push(c);
+    (this.tributes ??= []).push({
+      kind: "return",
+      from: p,
+      to: item.to,
+      card: c,
+    });
     this.log(
       `${this.names[p]} returns ${rankName(c.r)}${c.s} to ${this.names[item.to]}.`,
     );

@@ -102,6 +102,19 @@ export function restorePractice(raw) {
     const g = new Game();
     for (const key of Object.keys(g))
       if (key !== "random" && Object.hasOwn(state, key)) g[key] = state[key];
+    // Tribute markers: keep only well-formed records of real cards.
+    const realCard = (c) =>
+      validCards.get(c?.id)?.r === c.r && validCards.get(c?.id)?.s === c.s;
+    g.tributes = Array.isArray(state.tributes)
+      ? state.tributes.filter(
+          (t) =>
+            seat(t?.from) &&
+            (t.kind === "resist" ||
+              (["pay", "return"].includes(t.kind) &&
+                seat(t.to) &&
+                realCard(t.card))),
+        )
+      : [];
     g.lastActualMove = state.lastActualMove || null;
     g.scorebook = readScorebook(state.scorebook);
     g.__statsRecorded = state.__statsRecorded === true;
