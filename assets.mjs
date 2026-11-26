@@ -13,6 +13,7 @@ export const clientFiles = [
   "i18n.js",
   "hand-groups.js",
   "hand-group-ui.js",
+  "hand-sort.js",
   "stats.js",
   "practice-session.js",
   "played-history.js",

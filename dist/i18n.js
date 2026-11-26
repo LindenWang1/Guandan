@@ -246,8 +246,20 @@ export const messages = {
   "Select cards to make a combination": "选择手牌组成牌型",
   "These cards cannot beat the table. Try Hint.":
     "所选手牌无法压过当前牌型，请试试提示。",
-  "Sort: Rank ⇅": "排序：点数 ⇅",
-  "Sort: Suit ⇅": "排序：花色 ⇅",
+  // Sorting and arranging the hand.
+  Sort: "排序",
+  "Rank: Low to High": "点数：从小到大",
+  "Rank: High to Low": "点数：从大到小",
+  Suit: "花色",
+  "Bombs First": "炸弹优先",
+  "Stack by Rank": "竖排理牌",
+  "Stack cards of the same rank in columns": "同点数的牌竖向叠放",
+  "Auto-Group": "一键理牌",
+  "Find Bomb": "找炸弹",
+  "Find Straight Flush": "找同花顺",
+  "Auto-Group found nothing to group.": "一键理牌：没有可组合的牌。",
+  "No bombs in your hand.": "你的手牌中没有炸弹。",
+  "No straight flush in your hand.": "你的手牌中没有同花顺。",
   "Play the long game.": "默契配合，携手升级。",
   "Help your partner finish first.": "帮助搭档率先出完手牌。",
   "Hand History ↗": "出牌记录 ↗",
@@ -586,6 +598,15 @@ const patterns = [
     /^(.+) (is up\.|is thinking…)$/,
     (_, name, state) =>
       `${name}${state === "is up." ? " 出牌。" : " 正在思考…"}`,
+  ],
+  [
+    /^Auto-Group made (\d+) groups?\. Wild cards, pairs and singles stay loose\.$/,
+    (_, n) => `一键理牌：已组成 ${n} 组。逢人配、对子和单张保持散放。`,
+  ],
+  [
+    /^(Bomb|Straight Flush) (\d+) of (\d+): (.+?)( [♠♥♣♦])?\. Tap again for the next one\.$/,
+    (_, kind, i, n, move, suit = "") =>
+      `${kind === "Bomb" ? "炸弹" : "同花顺"} ${i}/${n}：${combo(move)}${suit}。再次点击查看下一个。`,
   ],
   [
     /^Hint: (.+)\. (Your partner is ahead; consider passing\.|Tap Hint again for another option\.)$/,

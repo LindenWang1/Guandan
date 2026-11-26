@@ -1,4 +1,5 @@
-import { moves, sorted } from "./engine.js";
+import { moves } from "./engine.js";
+import { arrange } from "./hand-sort.js";
 
 // Private display state only. Never reorder or otherwise mutate the game's hand.
 export class HandGroups {
@@ -56,6 +57,17 @@ export class HandGroups {
     this.groups.push(group);
     return group;
   }
+  // Auto-Group: replace every group with the given moves.
+  replace(hand, list, level) {
+    this.groups = [];
+    for (const m of list)
+      this.add(
+        hand,
+        m.cards.map((c) => c.id),
+        level,
+        m.key,
+      );
+  }
   selected(ids) {
     const selected = new Set(ids);
     return this.groups.find(
@@ -80,7 +92,9 @@ export class HandGroups {
     ];
     return true;
   }
-  sections(hand, level, suit = false) {
+  // mode: a hand-sort.js sort mode ("rank", "rank-desc", "suit", "bombs").
+  // true/false still mean suit/rank for older callers.
+  sections(hand, level, mode = "rank") {
     this.sync(hand, level);
     const byId = new Map(hand.map((c) => [c.id, c])),
       used = new Set(this.groups.flatMap((g) => g.ids));
@@ -94,10 +108,10 @@ export class HandGroups {
         true,
       ).find((m) => m.key === g.key),
     }));
-    const loose = sorted(
+    const loose = arrange(
       hand.filter((c) => !used.has(c.id)),
       level,
-      suit,
+      mode === true ? "suit" : mode || "rank",
     );
     return [...(loose.length ? [{ id: null, cards: loose }] : []), ...sections];
   }

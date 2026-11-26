@@ -1,5 +1,6 @@
 import { HandGroups } from "./hand-groups.js";
 import { label, rankName } from "./engine.js";
+import { autoGroup, findBombs, rankStacks } from "./hand-sort.js";
 
 export function createHandGrouping({
   getGame,
@@ -9,6 +10,8 @@ export function createHandGrouping({
   onChange,
   isBusy,
   getSort,
+  getLayout = () => "row",
+  notify = () => {},
   cardHTML,
   escape,
 }) {
@@ -19,7 +22,7 @@ export function createHandGrouping({
   bar.hidden = true;
   let expanded = false;
   bar.innerHTML =
-    '<div class="group-buttons"><button id="group-selected" type="button">Group Selected</button><button id="release-group" type="button">Release Group</button><button id="group-left" type="button">Move Group Left</button><button id="group-right" type="button">Move Group Right</button><button id="reset-groups" type="button">Reset Groups</button></div><label id="group-choice-label" hidden><span>Group As</span><select id="group-choice" aria-label="Group As"></select></label><small id="group-help">Select a valid combination to keep it together. Click a group name to select its cards.</small>';
+    '<div class="group-buttons quick-buttons"><button id="auto-group" type="button">Auto-Group</button><button id="find-bomb" type="button">Find Bomb</button><button id="find-flush" type="button">Find Straight Flush</button></div><div class="group-buttons"><button id="group-selected" type="button">Group Selected</button><button id="release-group" type="button">Release Group</button><button id="group-left" type="button">Move Group Left</button><button id="group-right" type="button">Move Group Right</button><button id="reset-groups" type="button">Reset Groups</button></div><label id="group-choice-label" hidden><span>Group As</span><select id="group-choice" aria-label="Group As"></select></label><small id="group-help">Select a valid combination to keep it together. Click a group name to select its cards.</small>';
   hand.before(bar);
   const tray = document.createElement("section");
   tray.id = "grouped-cards";
@@ -40,7 +43,8 @@ export function createHandGrouping({
   const el = (id) => bar.querySelector("#" + id),
     groups = new HandGroups();
   let context = "",
-    groupKey = "";
+    groupKey = "",
+    finder = { signature: "", index: 0 };
   function sync() {
     const game = getGame(),
       next = getContext();
@@ -92,6 +96,8 @@ export function createHandGrouping({
     el("group-right").disabled =
       locked || index < 0 || index === groups.groups.length - 1;
     el("reset-groups").disabled = locked || !groups.groups.length;
+    for (const id of ["auto-group", "find-bomb", "find-flush"])
+      el(id).disabled = locked || !game.hands[0].length;
     el("group-choice-label").hidden = options.length < 2 || !!exact;
     el("group-choice").innerHTML = options
       .map(
@@ -117,6 +123,38 @@ export function createHandGrouping({
     if (action === "group-left") groups.move(ids, -1);
     if (action === "group-right") groups.move(ids, 1);
     if (action === "reset-groups") groups.clear();
+    if (action === "auto-group") {
+      const found = autoGroup(game.hands[0], game.level);
+      groups.replace(game.hands[0], found, game.level);
+      setSelected(new Set(), "");
+      notify(
+        found.length
+          ? `Auto-Group made ${found.length} group${found.length === 1 ? "" : "s"}. Wild cards, pairs and singles stay loose.`
+          : "Auto-Group found nothing to group.",
+      );
+    }
+    if (action === "find-bomb" || action === "find-flush") {
+      const flush = action === "find-flush",
+        list = findBombs(
+          game.hands[0],
+          game.level,
+          flush ? "Straight flush" : null,
+        ),
+        signature = action + list.map((m) => m.key).join();
+      if (signature !== finder.signature) finder = { signature, index: 0 };
+      if (!list.length)
+        notify(
+          flush ? "No straight flush in your hand." : "No bombs in your hand.",
+        );
+      else {
+        const i = finder.index++ % list.length,
+          m = list[i];
+        setSelected(new Set(m.cards.map((c) => c.id)), m.key);
+        notify(
+          `${flush ? "Straight Flush" : "Bomb"} ${i + 1} of ${list.length}: ${label(m)}${m.suit ? " " + m.suit : ""}. Tap again for the next one.`,
+        );
+      }
+    }
     persist();
     onChange();
   });
@@ -145,7 +183,10 @@ export function createHandGrouping({
     renderHand() {
       sync();
       const game = getGame(),
-        sections = groups.sections(game.hands[0], game.level, getSort());
+        // Stacks group by rank, so Suit order stacks like Rank order.
+        sort =
+          getLayout() === "stacks" && getSort() === "suit" ? "rank" : getSort(),
+        sections = groups.sections(game.hands[0], game.level, sort);
       tray.hidden = !groups.groups.length;
       const groupedHTML = sections
         .filter((s) => s.id)
@@ -156,12 +197,17 @@ export function createHandGrouping({
         .join("");
       if (groupList.innerHTML !== groupedHTML)
         groupList.innerHTML = groupedHTML;
+      const loose = sections.filter((s) => !s.id).flatMap((s) => s.cards);
+      // Stacked layout: cards of the same rank share a column.
       return (
-        sections
-          .filter((s) => !s.id)
-          .flatMap((s) => s.cards)
-          .map((c) => cardHTML(c, true))
-          .join("") ||
+        (getLayout() === "stacks"
+          ? rankStacks(loose)
+              .map(
+                (stack) =>
+                  `<div class="rank-stack" data-depth="${Math.min(stack.length, 10)}">${stack.map((c) => cardHTML(c, true)).join("")}</div>`,
+              )
+              .join("")
+          : loose.map((c) => cardHTML(c, true)).join("")) ||
         (groups.groups.length
           ? '<div class="empty-hand">All your cards are grouped below.</div>'
           : "")

@@ -1,6 +1,7 @@
 import { browserStorage, practiceSession } from "./practice-session.js";
 import { createPlayedHistory } from "./played-history.js";
 import { createHandGrouping } from "./hand-group-ui.js";
+import { validSort } from "./hand-sort.js";
 import { installLanguageToggle } from "./i18n.js";
 import {
   Game,
@@ -62,7 +63,8 @@ let game = recovered || new Game(),
   net = null,
   room = null,
   selected = new Set(),
-  suitSort = loadPref("guandan-sort", "rank") === "suit",
+  sortMode = validSort(loadPref("guandan-sort", "rank")),
+  stacked = loadPref("guandan-layout", "row") === "stacks",
   timer = null,
   hintIndex = 0,
   declared = "",
@@ -415,7 +417,7 @@ function render() {
     game.phase === "ready"
       ? "27 cards to begin"
       : cardCount(game.hands[0].length);
-  $("sort-btn").disabled = game.phase === "ready";
+  $("sort-select").disabled = $("stack-btn").disabled = game.phase === "ready";
   const center = $("table-center");
   document.querySelector(".table").dataset.phase = game.phase;
   if (room?.stage === "closed") {
@@ -605,9 +607,11 @@ function renderHand() {
         '<div class="empty-hand">You’re out. Cheer on your partner.</div>';
   if ($("hand").innerHTML !== html) $("hand").innerHTML = html;
   // Card count drives the overlap that keeps the hand in one row (style.css).
+  const stackCount = $("hand").querySelectorAll(":scope > .rank-stack").length;
+  $("hand").classList.toggle("stacked", stackCount > 0);
   $("hand").style.setProperty(
     "--n",
-    Math.max(1, $("hand").querySelectorAll(".card").length),
+    Math.max(1, stackCount || $("hand").querySelectorAll(".card").length),
   );
   animateDeal();
   const selector = focus
@@ -1027,9 +1031,15 @@ $("undo-selection").onclick = () => {
   declared = previous.declaration;
   renderSelection();
 };
-$("sort-btn").onclick = () => {
-  suitSort = !suitSort;
-  savePref("guandan-sort", suitSort ? "suit" : "rank");
+$("sort-select").onchange = (e) => {
+  sortMode = validSort(e.target.value);
+  savePref("guandan-sort", sortMode);
+  renderSortLabel();
+  renderHand();
+};
+$("stack-btn").onclick = () => {
+  stacked = !stacked;
+  savePref("guandan-layout", stacked ? "stacks" : "row");
   renderSortLabel();
   renderHand();
   renderActions();
@@ -1273,12 +1283,15 @@ const grouping = createHandGrouping({
     renderActions();
   },
   isBusy: () => busy,
-  getSort: () => suitSort,
+  getSort: () => sortMode,
+  getLayout: () => (stacked ? "stacks" : "row"),
+  notify: (message) => toast(message),
   cardHTML: cardsHTML,
   escape,
 });
 function renderSortLabel() {
-  $("sort-btn").textContent = `Sort: ${suitSort ? "Suit" : "Rank"} ⇅`;
+  $("sort-select").value = sortMode;
+  $("stack-btn").setAttribute("aria-pressed", String(stacked));
 }
 renderSortLabel();
 const preferences = createPreferences({

@@ -291,8 +291,22 @@
                 aria-expanded="false"
               >
                 Organize</button
-              ><button id="sort-btn" class="quiet" disabled>
-                Sort: Rank ⇅
+              ><label class="sort-control" for="sort-select"
+                ><span>Sort</span
+                ><select id="sort-select" disabled>
+                  <option value="rank">Rank: Low to High</option>
+                  <option value="rank-desc">Rank: High to Low</option>
+                  <option value="suit">Suit</option>
+                  <option value="bombs">Bombs First</option>
+                </select></label
+              ><button
+                id="stack-btn"
+                class="quiet"
+                aria-pressed="false"
+                title="Stack cards of the same rank in columns"
+                disabled
+              >
+                Stack by Rank
               </button>
             </div>
           </div>
