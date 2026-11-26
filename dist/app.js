@@ -3,6 +3,7 @@ import { createPlayedHistory } from "./played-history.js";
 import { createHandGrouping } from "./hand-group-ui.js";
 import { validSort } from "./hand-sort.js";
 import { createTakeBack } from "./take-back.js";
+import { createTutorial } from "./tutorial.js";
 import { installLanguageToggle } from "./i18n.js";
 import {
   Game,
@@ -488,7 +489,7 @@ function render() {
     );
   } else {
     center.innerHTML =
-      '<div class="watermark">掼蛋</div><p class="table-title">A good hand. A better partnership.</p><p class="table-subtitle">Climb together from 2 to Ace.</p><button class="gold-btn" id="start-btn">Deal a Practice Hand ↗</button>';
+      '<div class="watermark">掼蛋</div><p class="table-title">A good hand. A better partnership.</p><p class="table-subtitle">Climb together from 2 to Ace.</p><div class="start-actions"><button class="gold-btn" id="start-btn">Deal a Practice Hand ↗</button><button id="tutorial-btn" class="quiet">Learn to Play</button></div>';
     $("last-action").textContent = "108 Cards · 4 Players · 2 Teams";
     status("Play with an AI partner, or choose Online 2v2 to invite friends.");
   }
@@ -807,6 +808,19 @@ async function act(action, payload = {}) {
     schedule();
   }
 }
+// Interactive tutorial: lessons in the dialog; your saved game is untouched.
+const tutorial = createTutorial({
+  showModal: modal,
+  closeModal,
+  cardHTML: (card, level) => cardHTML(card, { level }),
+  onFinish: () => {
+    if (mode === "practice" && game.phase === "ready") act("start");
+  },
+  finishLabel: () =>
+    mode === "practice" && game.phase === "ready"
+      ? "Deal a Practice Hand ↗"
+      : "Back to Table",
+});
 $("takeback-btn").onclick = () => {
   if (busy || mode !== "practice") return;
   clearTimeout(timer);
@@ -1023,6 +1037,7 @@ document.addEventListener("click", (e) => {
     return;
   }
   if (e.target.closest("#start-btn")) act("start");
+  if (e.target.closest("#tutorial-btn")) tutorial.open();
   if (e.target.closest("#next-btn")) act("next");
   const addBot = e.target.closest("[data-add-bot]");
   if (addBot)
@@ -1130,6 +1145,7 @@ $("rules-btn").onclick = () =>
     setSpeed,
     showModal: modal,
     $,
+    startTutorial: () => tutorial.open(),
   });
 $("history-btn").onclick = () =>
   modal(

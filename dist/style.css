@@ -4435,3 +4435,96 @@ button.card.unavailable:hover:not(:disabled) {
     height: clamp(46px, calc(100cqh - 84px), 64px);
   }
 }
+
+/* v3.5: Interactive tutorial (in the dialog) and its entry on the table. */
+.start-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.tutorial h3 {
+  margin: 0 0 8px;
+  color: #8a6418;
+}
+.tutorial p {
+  line-height: 1.55;
+}
+.tutorial-task {
+  font-weight: 600;
+}
+.tutorial-table {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 50% 35%, #3e7059, #204333 85%);
+  color: #f3ead2;
+}
+.tutorial-table > span {
+  color: #d9e4cf;
+  font-size: 12px;
+}
+.tutorial-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tutorial-cards .card {
+  width: 52px;
+  height: 74px;
+  font-size: 18px;
+  pointer-events: none;
+}
+.tutorial-card {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  transition: transform 140ms ease;
+}
+.tutorial-card.picked {
+  transform: translateY(-8px);
+}
+.tutorial-card.picked .card {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 2px #f0d18a,
+    0 0 12px 2px #f0d18a77;
+}
+.tutorial-card.received .card {
+  outline: 2px dashed var(--gold);
+  outline-offset: 2px;
+}
+.tutorial-choices {
+  display: flex;
+  gap: 8px;
+}
+.tutorial-choices [aria-pressed="true"] {
+  border-color: #b8913f;
+  background: #f4e3b8;
+}
+.tutorial-feedback {
+  min-height: 1.5em;
+  color: #a5402b;
+  font-weight: 600;
+}
+.tutorial-feedback.ok {
+  color: #2d6e42;
+}
+.tutorial-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-card {
+    transition: none;
+  }
+}

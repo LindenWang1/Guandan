@@ -15,6 +15,7 @@ export const clientFiles = [
   "hand-group-ui.js",
   "hand-sort.js",
   "take-back.js",
+  "tutorial.js",
   "stats.js",
   "practice-session.js",
   "played-history.js",

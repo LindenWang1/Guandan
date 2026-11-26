@@ -246,6 +246,83 @@ export const messages = {
   "Select cards to make a combination": "选择手牌组成牌型",
   "These cards cannot beat the table. Try Hint.":
     "所选手牌无法压过当前牌型，请试试提示。",
+  // Interactive tutorial.
+  "Your Table": "你的牌桌",
+  "Guandan is played by four people in two teams. Your partner sits opposite you; in AI Practice that is Jade.":
+    "掼蛋由四人分两队进行。你的搭档坐在你对面；在人机练习中，搭档是 Jade。",
+  "Each hand, everyone tries to play out all 27 cards. Your team wants to finish first, and ideally second too.":
+    "每一局，每人都要尽快出完手中的 27 张牌。你们队要争取头游，最好二游也是自己人。",
+  "Play a Combination": "出一手牌",
+  "On your turn you play one combination: a single, a pair, a triple, a full house (a triple plus a pair), or a run.":
+    "轮到你时，出一手牌型：单张、对子、三张、三带二（三张加一对），或者连牌。",
+  "Select a full house, then press Check.":
+    "请选出一手三带二，然后点击“检查”。",
+  "That's a full house: three 6s with a pair of 9s.":
+    "没错，这是三带二：三张 6 带一对 9。",
+  "A full house is three cards of one rank plus a pair of another.":
+    "三带二是三张同点数的牌，加上另一点数的一对。",
+  "Beat the Table": "压过桌上的牌",
+  "To follow, play the same kind of combination, higher. Otherwise pass. When three players pass in a row, the last player to play leads again.":
+    "跟牌时，要出同类型且更大的牌，否则选择不出。连续三人不出时，最后出牌的人重新领出。",
+  "The table shows a pair of 9s. Select a pair that beats it.":
+    "桌上是一对 9。请选出一对能压过它的牌。",
+  "The pair of 10s beats the 9s.": "一对 10 压过了一对 9。",
+  "You need two cards of the same rank, higher than 9.":
+    "需要两张同点数、且比 9 大的牌。",
+  Runs: "连牌",
+  "Runs use five or six cards in a row: a straight (5 ranks in a row), a tube (3 pairs in a row) or a plate (2 triples in a row). Aces can be low or high, but runs never wrap around.":
+    "连牌有三种：顺子（5 个连续点数）、三连对（3 个连续对子）和钢板（2 个连续三张）。A 可以当最小或最大，但不能首尾相连。",
+  "Select a straight.": "请选出一手顺子。",
+  "3 to 7: a straight.": "3 到 7，是顺子。",
+  "Pick five cards with ranks in a row, like 3-4-5-6-7.":
+    "选出点数连续的五张牌，例如 3-4-5-6-7。",
+  "Wild Cards": "逢人配",
+  "Each hand is played at a level. This hand's level is 7. The two 7♥ in the deck are wild: each can stand in for any card except a joker.":
+    "每局都有一个级数，本局打 7。牌中的两张红桃 7 是逢人配，可以代替除大小王以外的任意牌。",
+  "Use the wild 7♥ to complete a straight.": "请用逢人配 7♥ 凑成一手顺子。",
+  "The wild 7♥ fills the gap, making a straight.":
+    "逢人配 7♥ 补上了空缺，组成顺子。",
+  "Choose 8, 9, 10 and J, plus the wild 7♥.":
+    "选 8、9、10、J，再加上逢人配 7♥。",
+  Bombs: "炸弹",
+  "A bomb beats any ordinary combination. From low to high: 4 of a kind, 5 of a kind, a straight flush, 6 to 10 of a kind, and finally all four jokers (天王炸).":
+    "炸弹可以压过任何普通牌型。从小到大依次为：4 张、5 张、同花顺、6 到 10 张，最大的是四张王（天王炸）。",
+  "Nothing ordinary in this hand beats the straight on the table. Select a bomb.":
+    "你手里没有普通牌型能压过桌上的顺子。请选出一个炸弹。",
+  "Four 5s make a bomb, which beats any straight.":
+    "四张 5 组成炸弹，可以压过任何顺子。",
+  "A bomb is four or more cards of the same rank.":
+    "四张或以上同点数的牌才是炸弹。",
+  "From the second hand on, the losing team pays tribute: last place gives first place their highest card (both losers pay after a 1st–2nd finish). The winner then returns a card.":
+    "从第二局起，输的一方要进贡：末游把手中最大的牌交给头游（若对方拿下头游和二游，两人都要进贡）。收贡方再还一张牌。",
+  "You finished first, and Lotus paid you the A♠. Select a card to return: it must be 10 or lower.":
+    "你是头游，Lotus 向你进贡了 A♠。请选一张牌还贡：必须是 10 或以下。",
+  "Return exactly one card.": "请只还一张牌。",
+  "Good. Returning a low card keeps your strength.":
+    "很好。还一张小牌，保留自己的实力。",
+  "The return must be 10 or lower (and not the card you just received).":
+    "还贡的牌必须是 10 或以下（且不能是刚收到的那张）。",
+  "Climbing Levels": "升级",
+  "Only the winning team climbs: 1st and 3rd climb 2 levels, 1st and 4th climb 1. Both teams start at 2, and the first team to win at Ace wins the match.":
+    "只有赢的一方升级：头游加三游升 2 级，头游加末游升 1 级。双方都从 2 开始，先在 A 获胜的一方赢得整场比赛。",
+  "You finish 1st and Jade, your partner, finishes 2nd. How many levels does your team climb?":
+    "你是头游，搭档 Jade 是二游。你们队升几级？",
+  "Right: a 1st–2nd finish climbs 3 levels (4 in the original variant, which you can pick under New Game).":
+    "答对了：头游加二游升 3 级（原始规则为 4 级，可在“新游戏”中选择）。",
+  "Finishing 1st and 2nd is the best result there is. Try a bigger number.":
+    "头游加二游是最好的结果，再试一个更大的数字。",
+  "Your Tools": "实用工具",
+  "Hint suggests a play; press it again for another. Sort and Stack by Rank arrange your hand. Organize holds Auto-Group, Find Bomb and Find Straight Flush. You can turn on Take Back in Settings to undo a move in practice.":
+    "“提示”会推荐出牌，再点一次可查看其他选择。“排序”和“竖排理牌”用来整理手牌。“整理”中有一键理牌、找炸弹和找同花顺。在设置中开启“允许悔牌”后，练习时可以撤回一步。",
+  "How to Play has the full rules whenever you need them. Ready for a real hand?":
+    "完整规则随时可在“玩法说明”中查看。准备好打一局了吗？",
+  Back: "上一步",
+  Next: "下一步",
+  Check: "检查",
+  "Skip Tutorial": "跳过教程",
+  "Learn to Play": "新手教程",
+  "On the Table": "桌上的牌",
+  "Try the Interactive Tutorial": "试试互动教程",
   // Take Back (AI Practice).
   "Take Back ↶": "悔牌 ↶",
   "Take Back Moves": "允许悔牌",
@@ -610,6 +687,7 @@ const patterns = [
     (_, name, state) =>
       `${name}${state === "is up." ? " 出牌。" : " 正在思考…"}`,
   ],
+  [/^Tutorial · (\d+) of (\d+)$/, (_, a, b) => `新手教程 · ${a}/${b}`],
   [
     /^Auto-Group made (\d+) groups?\. Wild cards, pairs and singles stay loose\.$/,
     (_, n) => `一键理牌：已组成 ${n} 组。逢人配、对子和单张保持散放。`,

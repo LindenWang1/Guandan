@@ -1,4 +1,4 @@
-# File Guide (Version 3.4)
+# File Guide (Version 3.5)
 
 ## Website (`dist/`)
 
@@ -19,6 +19,7 @@ The site is plain HTML, CSS and JavaScript modules, edited directly. Only
 | `hand-groups.js`, `hand-group-ui.js` | Private card grouping and the Organize tools |
 | `hand-sort.js` | Sort orders, Stack by Rank, the bomb and straight-flush finders, Auto-Group |
 | `take-back.js` | Take Back in AI Practice: snapshots before your moves in the current hand |
+| `tutorial.js` | The interactive tutorial: nine lessons checked by the rules engine |
 | `selection.js` | Selection undo and shift-click range selection |
 | `i18n.js`, `rules.js` | English/Chinese text and the How to Play guide |
 | `preferences.js`, `audio.js` | Settings dialog (including AI pace and Take Back), themes, card backs, synthesized sound cues |
@@ -48,12 +49,12 @@ The site is plain HTML, CSS and JavaScript modules, edited directly. Only
 (`multiplayer.test.mjs`, `online-bots.test.mjs`), AI (`expert-ai.test.mjs`), translations
 (`i18n.test.mjs`), and interface models and reliability (`experience`, `interaction`,
 `play-feedback`, `reliability`, `stats`, `hand-groups`, `card-view`), and the tribute
-markers (`tribute-markers.test.mjs`) hand sorting and Auto-Group (`hand-sort.test.mjs`), and Take Back and AI pace (`practice-options.test.mjs`).
+markers (`tribute-markers.test.mjs`) hand sorting and Auto-Group (`hand-sort.test.mjs`), Take Back and AI pace (`practice-options.test.mjs`), and the tutorial (`tutorial.test.mjs`).
 
 ## Docs
 
 - `DEPLOY.md`: running locally and deploying to Cloudflare.
-- `UPDATE-v3.4.md`: the latest changes. `UPDATE-v3.3.md`, `UPDATE-v3.2.md`, `UPDATE-v3.1.md`, `UPDATE-v2.9.md`, `CHANGELOG-v2.md`, `REVIEW-v2.md`: history of earlier versions (they mention files from those releases that are no longer part of the project).
+- `UPDATE-v3.5.md`: the latest changes. `UPDATE-v3.4.md`, `UPDATE-v3.3.md`, `UPDATE-v3.2.md`, `UPDATE-v3.1.md`, `UPDATE-v2.9.md`, `CHANGELOG-v2.md`, `REVIEW-v2.md`: history of earlier versions (they mention files from those releases that are no longer part of the project).
 - `screenshots/`: images used by the README and the earlier reviews.
 
 ## Not Committed
