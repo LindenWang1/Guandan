@@ -8,7 +8,7 @@ with AI players, or practice against four levels of AI in the browser.
 
 **Play Now (Practice vs. AI):** https://lindenwang1.github.io/Guandan/
 
-![Online Lobby with AI players](docs/screenshots/v3-online-lobby-ai.png)
+![A hand in progress: tribute tags beside each seat, a bomb with a wild card on the table, and the full hand in one row](docs/screenshots/v3.5-table.png)
 
 ## Results: The AI Ladder
 
@@ -39,7 +39,11 @@ of hearts is wild. The full rules are in the game under **How to Play**.
 ## What's in It
 
 - **AI Practice.** You plus three AI players, entirely in the browser. Saves progress,
-  pauses when the tab is hidden, and keeps statistics.
+  pauses when the tab is hidden, and keeps statistics. Choose the AI pace (2 seconds a
+  move by default) and, if you like, turn on Take Back to undo your last move.
+- **Learn to Play.** A nine-lesson interactive tutorial with real cards: combinations,
+  beating the table, runs, wild cards, bombs, tribute and levels, checked by the same
+  rules engine the game uses.
 - **Online 2v2.** Private rooms with an 8-character code or invite link. The server
   checks every move, and each player only ever receives their own hand. Reloading reconnects to
   your seat. Spectator links, emotes, a turn timer and a running scoreboard are included.
@@ -48,9 +52,15 @@ of hearts is wild. The full rules are in the game under **How to Play**.
 - **Four AI Levels.** Beginner often plays a random legal move. Medium balances its
   cards and protects its partner's lead. Hard also avoids breaking up useful
   combinations. Expert plans its whole hand, tracks every card played, and saves bombs.
-- **Built for the Table.** English/Chinese toggle per player, card grouping, hints,
-  keyboard shortcuts, sound cues, three table themes, a dealing animation, and place
-  medals. Reduced-motion settings are respected.
+- **Your Hand, Your Way.** Sort by rank (either direction), suit, or bombs first; stack
+  cards by rank (竖排理牌); or let Auto-Group (一键理牌) set aside bombs, straight flushes
+  and runs. Find Bomb and Find Straight Flush pick them out one tap at a time.
+- **Built for the Table.** English/Chinese toggle per player, tribute tags beside each
+  seat, hints, keyboard shortcuts, sound cues, three table themes, a dealing animation,
+  and place medals. The table and a full hand fit on one laptop screen.
+  Reduced-motion settings are respected.
+
+![Online lobby with AI players in open seats](docs/screenshots/v3-online-lobby-ai.png)
 
 ## Why It's Built This Way
 
